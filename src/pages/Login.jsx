@@ -1,50 +1,55 @@
-
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import LoginForm from "../features/auth/components/LoginForm";
 import loginbg from "../assets/institue image.avif";
-import LoginForm from "../features/auth/LoginForm";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const [msg, setMsg] = useState("");
+  const [isError, setIsError] = useState(false);
+
   return (
-    <section className="relative min-h-screen w-full  flex items-center justify-center overflow-hidden my-3">
-      
+    <div className="relative min-h-screen flex items-center justify-center p-4">
       <div className="absolute inset-0 z-0">
-        <img
-          src={loginbg}
-          alt="login-background"
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/20 backdrop-blur-[2px]"></div>
+        <img src={loginbg} className="w-full h-full object-cover" alt="bg" />
+        <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]"></div>
       </div>
 
-      <div className="absolute inset-6 border-2 border-white/20 rounded-[2rem] pointer-events-none z-10"></div>
-
-      <div className="absolute top-12 left-12 z-20 hidden md:block">
-        <h2 className="text-white font-black text-2xl tracking-tighter">
-          STEP2<span className="text-blue-400">SCIENTIST</span>
-        </h2>
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-20 w-full max-w-[450px] mx-4"
-      >
-        {/* <div className="bg-gray-500  backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-white/20 shadow-2xl"> */}
-        <div  className="md:w-[35vw] w-full mt-20 mb-5 bg-gray-50 rounded-3xl flex items-center justify-center p-8 lg:p-16 z-10 shadow-xl">
-        
-          <LoginForm />
+      <div className="relative z-10 mt-10 w-full max-w-md bg-white p-10 md:p-10 rounded-[2.2rem] shadow-2xl border border-white/20">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="text-slate-500 font-medium mt-2">
+            Sign in to your account
+          </p>
         </div>
-      </motion.div>
 
-      <div className="absolute bottom-12 text-center z-20 w-full">
-        <p className="text-white/40 text-[10px] font-bold tracking-[0.3em] uppercase">
-          Empowering the next generation
-        </p>
+        {msg && (
+          <div className={`p-4 rounded-2xl mb-6 text-center text-sm font-bold border ${
+            isError 
+              ? "bg-red-50 border-red-100 text-red-600" 
+              : "bg-blue-50 border-blue-100 text-blue-600"
+          }`}>
+            {msg}
+          </div>
+        )}
+
+        <LoginForm setMsg={setMsg} setIsError={setIsError} navigate={navigate} />
+
+        <div className="text-center mt-8">
+          <p className="text-slate-500 text-sm font-medium">
+            Don't have an account? 
+            <button 
+              onClick={() => navigate("/signup")} 
+              className="text-blue-600 font-bold ml-2 hover:underline transition-all"
+            >
+              Sign Up
+            </button>
+          </p>
+        </div>
       </div>
-
-    </section>
+    </div>
   );
 };
 

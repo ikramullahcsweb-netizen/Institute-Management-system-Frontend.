@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import SignUpForm from "../features/auth/SignUpForm";
+import SignUpForm from "../features/auth/components/SignUpForm"
 import loginbg from "../assets/institue image.avif";
 
 const SignUp = () => {
