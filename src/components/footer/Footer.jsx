@@ -37,17 +37,17 @@ const Footer = () => {
           <div>
             <h4 className="text-lg font-bold mb-6">Quick Links</h4>
             <ul className="space-y-4 text-slate-400 text-sm">
-              <li><a href="#Home" className="hover:text-[#52b69a] transition-colors">Home</a></li>
-              <li><a href="#About" className="hover:text-[#52b69a] transition-colors">About Us</a></li>
-              <li><a href="#Services" className="hover:text-[#52b69a] transition-colors">Services</a></li>
-              <li><a href="#Contact" className="hover:text-[#52b69a] transition-colors">Contact</a></li>
+              <li><a href="#Home" className="hover:text-[#52b69a] transition-colors hover:underline">Home</a></li>
+              <li><a href="#About" className="hover:text-[#52b69a] transition-colors hover:underline">About Us</a></li>
+              <li><a href="#Services" className="hover:text-[#52b69a] transition-colors hover:underline">Services</a></li>
+              <li><a href="#Contact" className="hover:text-[#52b69a] transition-colors hover:underline">Contact</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-lg font-bold mb-6">Our Services</h4>
             <ul className="space-y-4 text-slate-400 text-sm">
-              <li className="hover:text-[#52b69a] cursor-pointer transition-colors">Web Development</li>
+              <li className="hover:text-[#52b69a] cursor-pointer transition- ">Web Development</li>
               <li className="hover:text-[#52b69a] cursor-pointer transition-colors">AI & Machine Learning</li>
               <li className="hover:text-[#52b69a] cursor-pointer transition-colors">Database Management</li>
               <li className="hover:text-[#52b69a] cursor-pointer transition-colors">Data Science</li>

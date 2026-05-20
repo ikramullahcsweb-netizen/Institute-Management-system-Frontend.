@@ -1,34 +1,26 @@
-import React from 'react'
-import Navbar from './components/Navbar/Navbar'
-import Hero from './components/home/Hero'
-import About from './components/about/About'
-import Services from './components/serves/Services'
-import Footer from './components/footer/Footer'
-import Testimonials from './components/testimonials/Testimonials'
-import Vision from './components/our-vesion/Vesion'
-import Mentors from './components/professional-mentor/Mentors'
-
-import Milestones from './components/milestone/Milestones'
-
-import Contacts from './components/contact/Contacts'
-
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar/Navbar';
+import Footer from './components/footer/Footer';
+import Home from './pages/Home'; 
+import Login from './pages/Login'
+import SignUp from './pages/SignUp';
 
 
 const App = () => {
   return (
-    <div>
-      <Navbar/>
-    <Hero/>
-    <About/>
-    <Services/>
-    <Vision/>
-    <Mentors/>
-    <Testimonials/>
-    <Milestones/>
-    <Contacts/>
-    <Footer/>
-    </div>
-  )
-}
+    <Router>
+      <Navbar />
+      <Routes>
+       
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} /> 
+        <Route path="/SignUp" element={<SignUp/>}/>
+     
+      </Routes>
+      <Footer />
+    </Router>
+  );
+};
 
-export default App
+export default App;

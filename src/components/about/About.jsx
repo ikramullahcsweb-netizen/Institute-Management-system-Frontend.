@@ -22,7 +22,7 @@ const About = () => {
           
           <div className="z-10 text-left order-2 lg:order-1">
             <h2 className="text-[#1a759f] font-bold tracking-[0.2em] text-sm mb-4 uppercase">
-              🚀 Discover Our Mission
+               Discover Our Mission
             </h2>
             
             <h1 className="text-4xl md:text-5xl font-black text-slate-800 leading-tight mb-6">
