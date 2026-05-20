@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Head from '../Header/Header';
 import { toast, Toaster } from 'react-hot-toast';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-import { FaCheckCircle, FaCalendarAlt, FaSearch, FaFileDownload, FaClipboardList, FaLayersGroup } from 'react-icons/fa';
-
+import { FaCheckCircle, FaCalendarAlt, FaSearch, FaFileDownload, FaClipboardList,  } from 'react-icons/fa';
+import { FaLayerGroup, /* baaki icons... */ } from 'react-icons/fa';
 function AttendStudent() {
   // Functional front-end mockup states mapping robust structural schemas
   const [studentId] = useState('STU-2026-09');
