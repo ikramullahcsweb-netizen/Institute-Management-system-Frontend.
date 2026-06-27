@@ -1,257 +1,178 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import {useParams} from 'react-router-dom';
+import  { useState } from 'react';
+import './steditbank.css';
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
-import { FaTimesCircle, FaCheckCircle, FaReceipt, FaRegIdCard, FaUser, FaUniversity, FaFileAlt, FaCalendarAlt, FaCoins, FaCreditCard } from 'react-icons/fa';
+
+
 
 function StEditBank() {
-  const navigator = useNavigate();
 
-  // Pure Clean Static Bank Layout Model Parameters
-  const itnumber = "IT20249811";
-  const accountname = "Ikram Ullah Khan";
-  const accountnumber = "0010048291030012";
-  const bankname = "Habib Bank Limited (HBL)";
-  const description = "Semester Enrollment Tuition Fee Contribution";
-  const date = "2026-05-20";
-  const amount = "45,000.00";
+    const {id} = useParams();
+    const[itnumber,setItnumber] = useState();
+    const[accountname,setAccountname] = useState();
+    const[accountnumber,setAccountnumber] = useState();
+    const[bankname,setBankname] = useState();
+    const[description,setDescription] = useState();
+    const[date,setDate] = useState();
+    const[amount,setAmount] = useState();
+    const navigator = useNavigate();
+  
+  
+    useEffect(()=>{
+        axios.get('http://localhost:3000/getbank/' +id)
+        .then((res)=>{
+          setItnumber(res.data.itnumber);
+          setAccountname(res.data.accountname);
+          setAccountnumber(res.data.accountnumber);
+          setBankname(res.data.bankname);
+          setDescription(res.data.description);
+          setDate(res.data.date);
+          setAmount(res.data.amount);
+  
+        })
+        .catch((err) => console.error(err));
+    },[id]);
+  
+  
+    const updatebank = (e) =>{
+      e.preventDefault();
+      axios.put('http://localhost:3000/updatebank/'+id,{itnumber:itnumber ,accountname:accountname, accountnumber:accountnumber, bankname:bankname,description:description,
+      date:date , amount:amount})
+  
+      .then(res=>{
+        console.log(res);
+      })
+      .catch(err => console.error(err));
+    }
+  
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    Swal.fire({
-      title: "Update Payment",
-      text: "Are you sure you want to save the changes?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#483EA8",
-      cancelButtonColor: "#ef4444",
-      confirmButtonText: "Yes, proceed!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        Swal.fire({
-          title: "Changes are Updated",
-          icon: "success",
-          confirmButtonColor: "#483EA8"
-        });
-        handleToastFlow();
-      } else {
-        Swal.fire({
-          title: "Changes are Canceled",
-          icon: "error",
-          confirmButtonColor: "#483EA8"
-        });
-      }
-    });
-  };
-
-  const handleToastFlow = () => {
-    toast.loading('Changes are saving...', {
-      style: {
-        background: '#0f172a',
-        color: '#ffffff',
-        borderRadius: '12px',
-        border: '1px solid #334155',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        textTransform: 'uppercase'
-      },
-    });
-
-    setTimeout(() => {
-      toast.dismiss();
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      Swal.fire({
+        title: "Update Payment",
+        text: "Are you sure you want to save the changes?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, proceed!",
+        cancelButtonText: "Cancel",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          updatebank(e); // Call submit function if result is confirmed
+          Swal.fire({
+            title: "Changes are Updated",
+            icon: "success",
+          });
+          handleClick2();
+        } else {
+          Swal.fire({
+            title: "Changes are Canceled",
+            icon: "error",
+          });
+          // Call submit function even if result is canceled
+        }
+      });
+    };
+    
+    
+  
+    const handleClick2 = () => {
+      toast.loading('Changes are saving...', {
+        style: {
+          background: 'black', // Customize the background color
+          color: '#ffffff', // Customize the text color
+          borderRadius: '10px', // Add border radius
+          border: '2px solid #ffffff', // Add border
+        },
+      });
+    
       setTimeout(() => {
-        toast.success('Payment is Updated!', {
-          style: {
-            background: '#10b981',
-            color: '#ffffff',
-            borderRadius: '12px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            textTransform: 'uppercase'
-          },
-          duration: 2000,
-          iconTheme: {
-            primary: '#ffffff',
-            secondary: '#10b981',
-          },
-        });
+        toast.dismiss();
         setTimeout(() => {
-          navigator('/viewbank');
-        }, 2000);
-      }, 1000);
-    }, 2500);
-  };
-
-  const handleCancel = (e) => {
-    e.preventDefault();
-    navigator('/viewbank');
-  };
-
+          toast.success('Payment is Updated!', {
+            style: {
+              background: '#28a745', // Green background color
+              color: '#ffffff', // White text color
+              borderRadius: '10px', // Rounded corners
+              border: '2px solid #ffffff', // White border
+            },
+            duration: 2000, // Display duration in milliseconds (3 seconds)
+            iconTheme: {
+              primary: '#ffffff', // White icon color
+              secondary: '#28a745', // Green icon color
+            },
+          });
+          setTimeout(() => {
+            navigator('/viewbank');
+          }, 2500); // Wait for 2 seconds after displaying success toast before navigating
+        }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
+      }, 5000); // Wait for 5 seconds before dismissing loading toast
+    };
+  
+    const handleCancel = () => {
+      navigator('/viewbank');
+    }
+    
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-12">
-      <Head />
-      <Toaster />
+    <div>
+     <Head/>
+      <div>
+      <Toaster/>
+     <div className="bodyeba">
+            <h1 className="ebah1"> <br></br>Edit Payment</h1>
 
-      {/* Main Responsive Canvas Layer with Left Sidebar Clearance Protection */}
-      <div className="w-full max-w-[1000px] mx-auto px-4 pl-4 md:pl-[290px] mt-8 transition-all">
-        
-        {/* Brand Display Identification Header Block */}
-        <div className="w-full bg-[#C9E8EA] border border-slate-200 rounded-[20px] p-5 mb-8 flex items-center justify-between shadow-xs">
-          <div>
-            <h1 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
-              <FaReceipt className="text-slate-700" />
-              <span>Edit Bank Transfer Log</span>
-            </h1>
-            <p className="text-[11px] text-slate-600 font-bold mt-0.5 uppercase tracking-wide">
-              Modify custom offline student account validation metrics and verification records.
-            </p>
-          </div>
+            <div className="containereba">
+                <form className="payeba" 
+                onSubmit={handleSubmit}
+                >
+                <h2 className="ebah2"><br></br>Payment Details</h2><br/>
+
+                    <label htmlFor="cname" className="labeleba1">Enter IT Number:</label><br/>
+                    <input type="text" name="itnum" placeholder="IT12345678" readOnly required className="texteba1"  value={itnumber} onChange={(e)=>setItnumber(e.target.value)}/><br /><br />
+
+                    <label htmlFor="an" className="labeleba1">Enter Account Name:</label><br/>
+                    <input type="text" name="acname" placeholder="Enter Name" pattern="[A-Za-z\s]+" required className="texteba2"  value={accountname} onChange={(e)=>setAccountname(e.target.value)}/> <br /><br />
+
+                    <label htmlFor="an" className="labeleba1">Enter Account Number:</label><br/>
+                    <input type="text" name="acnum" placeholder="xxxxxxxxxx" pattern="[0-9]+" required className="texteba3" value={accountnumber} onChange={(e)=>setAccountnumber(e.target.value)}/> <br /><br />
+
+                    <label htmlFor="cno" className="labeleba1">Enter Bank Name:</label><br/>
+                    <input type="text" name="bname" placeholder="Enter Bank Name" pattern="[A-Za-z\s]+" required className="texteba4" value={bankname} onChange={(e)=>setBankname(e.target.value)}/><br /><br />
+
+                    <label htmlFor="totalA" className="labeleba1">Enter Description:</label><br/>
+                    <input type="text" name="descriptions" placeholder="Class Name" pattern="[A-Za-z\s]+" required className="texteba7" value={description} onChange={(e)=>setDescription(e.target.value)}/><br /><br />
+
+                    <label htmlFor="tda" className="labeleba1">Enter Date:</label><br/>
+                    <input type="date" name="dates" placeholder="(DD/MM/YY)"  readOnly  className="texteba5" value={date} onChange={(e)=>setDate(e.target.value)}/><br /><br />
+
+                    <label htmlFor="totalA" className="labeleba1">Enter Amount:</label><br/>
+                    <input type="text" name="amounts" placeholder="00.00" readOnly required className="texteba6" value={amount} onChange={(e)=>setAmount(e.target.value)}/><br /><br />
+                    <br></br>
+                    
+                    
+                   {/*  <div className="payeba2">
+                      <br/>
+                    <label htmlFor="file" className="labeleba8">Upload a file:</label><br />
+                    <input type="file" id="file" name="file" className="texteba8" readOnly />
+                    </div> */}
+                    <div className="containereba4"> 
+                        <button type="submit" name="submit" className="buttoneba3">Save</button>
+                        <button type="submit" name="submit" className="buttoneba4" 
+                        onClick={handleCancel}
+                        >Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
-
-        {/* Core Financial Form Box Container Wrapper */}
-        <div className="bg-white border-2 border-slate-200 rounded-[22px] shadow-xs overflow-hidden">
-          
-          {/* Subsystem Descriptive Ribbon Section Header */}
-          <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#483EA8]" />
-              <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">
-                Bank Remittance Management Fields
-              </h2>
-            </div>
-            <span className="text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200 font-black uppercase tracking-wider px-2.5 py-1 rounded-md">
-              Institutional Vault
-            </span>
-          </div>
-
-          {/* Core Form Static Component Interface */}
-          <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* IT Number Field Block */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaRegIdCard className="text-slate-400 text-xs" /> Student IT Code Trace
-                </label>
-                <input 
-                  type="text" 
-                  readOnly 
-                  defaultValue={itnumber} 
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wide focus:outline-none cursor-not-allowed"
-                />
-              </div>
-
-              {/* Account Name Field Block */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaUser className="text-slate-400 text-xs" /> Account Title Holder
-                </label>
-                <input 
-                  type="text" 
-                  defaultValue={accountname}
-                  placeholder="Enter Holder Name"
-                  className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#483EA8] transition-colors"
-                />
-              </div>
-
-              {/* Account Number Field Block */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaCreditCard className="text-slate-400 text-xs" /> IBAN / Account Identification
-                </label>
-                <input 
-                  type="text" 
-                  defaultValue={accountnumber}
-                  placeholder="Enter Account Number"
-                  className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#483EA8] transition-colors"
-                />
-              </div>
-
-              {/* Bank Name Field Block */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaUniversity className="text-slate-400 text-xs" /> Clearing Bank Association
-                </label>
-                <input 
-                  type="text" 
-                  defaultValue={bankname}
-                  placeholder="Enter Bank Branch Name"
-                  className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#483EA8] transition-colors"
-                />
-              </div>
-
-              {/* Description Field Block */}
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaFileAlt className="text-slate-400 text-xs" /> Allocation Description Note
-                </label>
-                <input 
-                  type="text" 
-                  defaultValue={description}
-                  placeholder="Class Name Details"
-                  className="w-full bg-white border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#483EA8] transition-colors"
-                />
-              </div>
-
-              {/* Date Field Block */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaCalendarAlt className="text-slate-400 text-xs" /> Locked Transaction Date
-                </label>
-                <input 
-                  type="text" 
-                  readOnly 
-                  defaultValue={date} 
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-bold text-slate-600 focus:outline-none cursor-not-allowed"
-                />
-              </div>
-
-              {/* Amount Field Block */}
-              <div className="space-y-2">
-                <label className="text-[11px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <FaCoins className="text-slate-400 text-xs" /> Transferred Balance Statement (PKR)
-                </label>
-                <input 
-                  type="text" 
-                  readOnly 
-                  defaultValue={amount} 
-                  className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-xs font-black text-slate-700 focus:outline-none cursor-not-allowed"
-                />
-              </div>
-
-            </div>
-
-            {/* Core Action Button Trigger Footer Controls */}
-            <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
-              
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-black uppercase tracking-wider px-6 py-3.5 rounded-xl border border-slate-300 transition-all group"
-              >
-                <FaTimesCircle className="text-slate-400 text-sm" />
-                <span>Dismiss Changes</span>
-              </button>
-
-              <button
-                type="submit"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#483EA8] hover:bg-[#392f8a] text-white text-[11px] font-black uppercase tracking-wider px-8 py-3.5 rounded-xl transition-all shadow-md group"
-              >
-                <FaCheckCircle className="text-sm" />
-                <span>Save Bank Record</span>
-              </button>
-
-            </div>
-
-          </form>
-
-        </div>
-      </div>
     </div>
-  );
+    </div>
+  )
 }
 
-export default StEditBank;
+export default StEditBank

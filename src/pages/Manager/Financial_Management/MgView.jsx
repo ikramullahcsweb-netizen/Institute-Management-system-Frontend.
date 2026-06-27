@@ -1,148 +1,106 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import Swal from "sweetalert2";
-import Head from "../Header/Header";
-import logo from "../../../assets/step2 scientist logo.jpeg";
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import Head from '../Header/Header';
 
 function MgView() {
+  const [allmpayments, setAllPayments] = useState([]);
   const navigate = useNavigate();
 
-  // STATIC DATA
-  const [payments, setPayments] = useState([
-    {
-      _id: "1",
-      itnumber: "SID123456",
-      description: "React Course",
-      date: "2026-05-15",
-      amount: "5000",
-      type: "Cash",
-      status: "Pending",
-    },
-    {
-      _id: "2",
-      itnumber: "SID654321",
-      description: "Node Course",
-      date: "2026-05-14",
-      amount: "3000",
-      type: "Online",
-      status: "Approved",
-    },
-    {
-      _id: "3",
-      itnumber: "SID789456",
-      description: "UI UX Class",
-      date: "2026-05-13",
-      amount: "4500",
-      type: "Bank",
-      status: "Rejected",
-    },
-  ]);
+  useEffect(() => {
+    fetchPayments();
+  }, []);
 
-  // DELETE
-  const handleDelete = (id) => {
+  const fetchPayments = async () => {
+    try {
+      // Yahan port 3000 update kar diya gaya hai
+      const [onlineRes, bankRes, cashRes] = await Promise.all([
+        axios.get('http://localhost:3000/displayonline'),
+        axios.get('http://localhost:3000/displaybank'),
+        axios.get('http://localhost:3000/displaycash')
+      ]);
+      setAllPayments([...onlineRes.data, ...bankRes.data, ...cashRes.data]);
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to fetch data");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      // Yahan bhi port 3000 update kar diya gaya hai
+      await axios.delete(`http://localhost:3000/deletepayment/${id}`);
+      setAllPayments(allmpayments.filter(item => item._id !== id));
+      toast.success('Payment Deleted Successfully');
+    } catch (err) {
+      toast.error("Delete failed");
+    }
+  };
+
+  const confirmDelete = (id) => {
     Swal.fire({
-      title: "Delete Payment",
-      text: "Are you sure?",
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#1DB6D9",
-      cancelButtonColor: "#384D6C",
+      confirmButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
     }).then((result) => {
-      if (result.isConfirmed) {
-        const updatedPayments = payments.filter((item) => item._id !== id);
-
-        setPayments(updatedPayments);
-
-        toast.success("Payment Deleted");
-
-        setTimeout(() => {
-          navigate("/managerfinancial");
-        }, 1500);
-      }
+      if (result.isConfirmed) handleDelete(id);
     });
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 py-4">
+    <div className="min-h-screen bg-gray-50 p-6">
       <Head />
       <Toaster />
-
-      {/* LOGO */}
-      <div className="flex justify-center">
-        <div className="w-[200px] h-[200px] rounded-full border-4 border-[#1DB6D9] flex items-center justify-center">
-          <img src={logo} alt="logo" className="w-36" />
-        </div>
-      </div>
-
-      {/* TITLE */}
-      <div className="max-w-7xl mx-auto mt-3 bg-[#DDF7F8] border border-black rounded-2xl py-3">
-        <h1 className="text-center text-3xl font-bold text-[#1DB6D9]">
-          Student Payments
-        </h1>
-      </div>
-
-      {/* TABLE */}
-      <div className="max-w-7xl mx-auto mt-5 overflow-x-auto border border-black rounded-2xl">
-        <table className="w-full">
-          <thead className="bg-[#384D6C] text-white">
-            <tr>
-              <th className="p-4 text-left">IT Number</th>
-              <th className="p-4 text-left">Description</th>
-              <th className="p-4 text-left">Date</th>
-              <th className="p-4 text-left">Amount</th>
-              <th className="p-4 text-left">Type</th>
-              <th className="p-4 text-left">Status</th>
-              <th className="p-4 text-left">Edit</th>
-              <th className="p-4 text-left">Delete</th>
-            </tr>
-          </thead>
-
-          <tbody className="bg-[#DDF7F8]">
-            {payments.map((payment) => (
-              <tr key={payment._id} className="border-b-2 border-[#384D6C]">
-                <td className="p-4 font-bold">{payment.itnumber}</td>
-
-                <td className="p-4 font-bold">{payment.description}</td>
-
-                <td className="p-4 font-bold">{payment.date}</td>
-
-                <td className="p-4 font-bold">Rs {payment.amount}</td>
-
-                <td className="p-4 font-bold">{payment.type}</td>
-
-                <td
-                  className={`p-4 font-bold ${
-                    payment.status === "Approved"
-                      ? "text-green-600"
-                      : payment.status === "Rejected"
-                        ? "text-red-600"
-                        : "text-blue-600"
-                  }`}
-                >
-                  {payment.status}
-                </td>
-
-                <td className="p-4">
-                  <Link to={`/editmanager/${payment._id}`}>
-                    <button className="bg-green-700 hover:bg-[#1DB6D9] text-white px-5 py-2 rounded-xl border border-black font-bold transition-all">
-                      Edit
-                    </button>
-                  </Link>
-                </td>
-
-                <td className="p-4">
-                  <button
-                    onClick={() => handleDelete(payment._id)}
-                    className="bg-red-700 hover:bg-red-500 text-white px-5 py-2 rounded-xl border border-black font-bold transition-all"
-                  >
-                    Delete
-                  </button>
-                </td>
+      
+      <div className="max-w-7xl mx-auto mt-10">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Student Payments</h1>
+        
+        <div className="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+          <table className="w-full text-left">
+            <thead className="bg-gray-800 text-white">
+              <tr>
+                <th className="p-4">IT Number</th>
+                <th className="p-4">Description</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Amount</th>
+                <th className="p-4">Type</th>
+                <th className="p-4">Status</th>
+                <th className="p-4">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {allmpayments.map((item) => (
+                <tr key={item._id} className="hover:bg-gray-50">
+                  <td className="p-4">{item.itnumber}</td>
+                  <td className="p-4">{item.description}</td>
+                  <td className="p-4">{item.date}</td>
+                  {/* Ab ye dynamic data le raha hai */}
+                  <td className="p-4 font-semibold">Rs {item.amount}</td>
+                  <td className="p-4">{item.type}</td>
+                  <td className={`p-4 font-bold ${
+                    item.status === 'Approved' ? 'text-green-600' : 
+                    item.status === 'Rejected' ? 'text-red-600' : 'text-blue-600'
+                  }`}>
+                    {item.status}
+                  </td>
+                  <td className="p-4 flex gap-2">
+                    <Link to={`/editmanager/${item._id}`} className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
+                      Edit
+                    </Link>
+                    <button onClick={() => confirmDelete(item._id)} className="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

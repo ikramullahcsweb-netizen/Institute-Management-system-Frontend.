@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import loginimg from '../photos/managerlogin.png';
-import logofull from '../photos/logofull.png';
+import logofull from '../../src/assets/crop logo.jfif';
 
 function LoginSelection() {
   return (
-    <main className="w-full min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
+    // 🚀 Tabdeeli: items-center ko items-start kiya aur top margin/padding (pt-16 md:pt-24 lg:pt-32) lagayi
+    <main className="w-full min-h-screen bg-slate-50 flex items-start justify-center p-4 pt-16 md:pt-24  font-sans">
       <div className="w-full max-w-[1000px] bg-white border-2 border-slate-200 rounded-[24px] shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center">
         
         {/* Left Side: Illustration Panel */}
@@ -13,7 +15,7 @@ function LoginSelection() {
           <img 
             src={loginimg} 
             alt="login decoration panel" 
-            className="w-full max-w-[400px] h-auto object-contain object-center" 
+            className="w-full max-w-[400px] h-auto object-contain object-center transition-transform duration-300 hover:scale-102" 
           />
         </div>
 
@@ -22,11 +24,11 @@ function LoginSelection() {
           <img 
             src={logofull} 
             alt="Royal Academy branding logo" 
-            className="h-16 w-auto object-contain mb-4" 
+            className="h-16 w-auto object-contain mb-4 rounded-full" 
           />
           
           <h1 className="text-xl font-black text-[#13293d] tracking-tight uppercase mb-8">
-            Welcome to Royal Academy
+            Welcome to step to scientist
           </h1>
           
           {/* Action Button Links Group */}
@@ -34,7 +36,7 @@ function LoginSelection() {
             <Link to="/managerlogin" className="w-full">
               <button 
                 type="button" 
-                className="w-full bg-[#10a1b6] hover:bg-[#0e8a9c] text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider"
+                className="w-full bg-[#10a1b6] hover:bg-[#0e8a9c] text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
               >
                 Manager Login
               </button>
@@ -43,7 +45,7 @@ function LoginSelection() {
             <Link to="/adminlogin" className="w-full">
               <button 
                 type="button" 
-                className="w-full bg-[#063a67] hover:bg-[#13293d] text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider"
+                className="w-full bg-[#063a67] hover:bg-[#13293d] text-white font-bold text-sm py-3.5 px-6 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
               >
                 Admin Login
               </button>

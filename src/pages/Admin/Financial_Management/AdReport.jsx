@@ -1,201 +1,120 @@
+;
+
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import './AdReport.css';
 import { useLocation } from 'react-router-dom';
 import { PDFDownloadLink, Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import Head from '../Header/Header';
 import logo from '../../../assets/step2 scientist logo.jpeg';
 
-const AdReport = () => {
-    const [allClasses, setAllClasses] = useState([]);
+function AdReport() {
+    const [allPayments, setAllPayments] = useState([]);
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
     const selectedMonth = queryParams.get('month');
 
-    useEffect(() => {
-        const savedClasses = localStorage.getItem('s2s_additional_classes');
-        const classes = savedClasses ? JSON.parse(savedClasses) : [];
-
-        if (selectedMonth && classes.length > 0) {
-            const filteredClasses = classes.filter(item => {
-                const classDate = new Date(item.date);
-                const targetMonth = parseInt(selectedMonth.split('-')[1]) - 1;
-                const targetYear = parseInt(selectedMonth.split('-')[0]);
-                return classDate.getMonth() === targetMonth && classDate.getFullYear() === targetYear;
-            });
-            setAllClasses(filteredClasses);
-        } else {
-            setAllClasses(classes);
+    const fetchPayments = async () => {
+        try {
+            // Backend URL: localhost:5000
+            const [onlineRes, bankRes, cashRes] = await Promise.all([
+                axios.get('http://localhost:5000/displayonline'),
+                axios.get('http://localhost:5000/displaybank'),
+                axios.get('http://localhost:5000/displaycash')
+            ]);
+            
+            const allPaymentsData = [...onlineRes.data, ...bankRes.data, ...cashRes.data];
+            
+            const filteredPayments = selectedMonth 
+                ? allPaymentsData.filter(payment => {
+                    const paymentDate = new Date(payment.date);
+                    // Mahina match karne ka logic
+                    return paymentDate.getMonth() === parseInt(selectedMonth.split('-')[1]) - 1;
+                })
+                : allPaymentsData;
+                
+            setAllPayments(filteredPayments);
+        } catch (error) {
+            console.error("Data fetch karne mein error:", error);
+            alert("Backend se data nahi mil raha. Check karein ke server 5000 par chal raha hai!");
         }
-    }, [selectedMonth]);
-
-    const classcounts = {
-        totalclasses: allClasses.length,
     };
 
+    useEffect(() => {
+        fetchPayments();
+    }, [selectedMonth]);
+
+    const paymentCounts = {
+        totalStudents: allPayments.length,
+        approved: allPayments.filter(p => p.status === 'Approved').length,
+        rejected: allPayments.filter(p => p.status === 'Rejected').length,
+        pending: allPayments.filter(p => p.status === 'Pending').length,
+        online: allPayments.filter(p => p.type === 'Online').length,
+        bank: allPayments.filter(p => p.type === 'Bank').length,
+        cash: allPayments.filter(p => p.type === 'Cash').length,
+    };
+
+    const totalAmount = allPayments.reduce((total, p) => total + parseFloat(p.amount || 0), 0);
+
     const styles = StyleSheet.create({
-        page: {
-            padding: 40,
-            backgroundColor: '#ffffff',
-        },
-        headerSection: {
-            borderBottomWidth: 2,
-            borderBottomColor: '#063a67',
-            paddingBottom: 15,
-            marginBottom: 20,
-            alignItems: 'center',
-        },
-        logo: {
-            width: 200,
-            height: 65,
-            marginBottom: 8,
-        },
-        academyName: {
-            fontSize: 20,
-            fontWeight: 'bold',
-            color: '#063a67',
-            letterSpacing: 1,
-        },
-        reportTitle: {
-            fontSize: 12,
-            color: '#555555',
-            marginTop: 4,
-        },
-        tableHeader: {
-            flexDirection: 'row',
-            backgroundColor: '#063a67',
-            padding: 10,
-            borderRadius: 4,
-        },
-        tableHeaderText: {
-            color: '#ffffff',
-            fontSize: 11,
-            fontWeight: 'bold',
-            flex: 1,
-        },
-        row: {
-            flexDirection: 'row',
-            borderBottomWidth: 1,
-            borderBottomColor: '#e1e8ed',
-            padding: 10,
-            alignItems: 'center',
-        },
-        cell: {
-            flex: 1,
-            fontSize: 10,
-            color: '#333333',
-        },
-        statsSection: {
-            marginTop: 40,
-            padding: 12,
-            backgroundColor: '#f4f7f9',
-            borderRadius: 4,
-            borderLeftWidth: 5,
-            borderLeftColor: '#063a67',
-        },
-        statsText: {
-            fontSize: 12,
-            fontWeight: 'bold',
-            color: '#063a67',
-        }
+        page: { padding: 40, marginTop: 20, backgroundColor: '#f0f0f0' },
+        row: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#ccc', alignItems: 'center', minHeight: 30, marginTop: 5, backgroundColor: '#fff', borderRadius: 5, padding: 5 },
+        header: { fontSize: 18, fontWeight: 'bold', color: '#333', textAlign: 'center', marginBottom: 20 },
+        cell: { flex: 1, fontSize: 9, color: '#666' },
+        logo: { width: 150, height: 45, marginBottom: 10, alignSelf: 'center' },
+        statsContainer: { marginTop: 20, padding: 15, borderTopWidth: 2, borderTopColor: '#000' }
     });
 
-    const MyDocument = ({ allClasses }) => (
+    const MyDocument = () => (
         <Document>
             <Page size="A4" style={styles.page}>
-                <View style={styles.headerSection}>
-                    <Image src={logo} style={styles.logo} />
-                    <Text style={styles.academyName}>STEP 2 SCIENTIST ACADEMY</Text>
-                    <Text style={styles.reportTitle}>Academic Report — {selectedMonth || "All Records"}</Text>
+                <Image src={logo} style={styles.logo} />
+                <Text style={styles.header}>Payment Report: {selectedMonth || "All"}</Text>
+                <View style={styles.row}>
+                    <Text style={styles.cell}>ID</Text><Text style={styles.cell}>Desc</Text><Text style={styles.cell}>Date</Text><Text style={styles.cell}>Amount</Text><Text style={styles.cell}>Type</Text><Text style={styles.cell}>Status</Text>
                 </View>
-                
-                <View style={styles.tableHeader}>
-                    <Text style={styles.tableHeaderText}>Teacher</Text>
-                    <Text style={styles.tableHeaderText}>Grade</Text>
-                    <Text style={styles.tableHeaderText}>Subject</Text>
-                    <Text style={styles.tableHeaderText}>Date</Text>
-                    <Text style={styles.tableHeaderText}>Status</Text>
-                </View>
-
-                {allClasses.length === 0 ? (
-                    <View style={{ padding: 30, textAlign: 'center' }}>
-                        <Text style={{ fontSize: 11, color: '#888888' }}>No records found.</Text>
+                {allPayments.map((p) => (
+                    <View key={p._id} style={styles.row}>
+                        <Text style={styles.cell}>{p.itnumber}</Text>
+                        <Text style={styles.cell}>{p.description}</Text>
+                        <Text style={styles.cell}>{p.date}</Text>
+                        <Text style={styles.cell}>{p.amount}</Text>
+                        <Text style={styles.cell}>{p.type}</Text>
+                        <Text style={styles.cell}>{p.status}</Text>
                     </View>
-                ) : (
-                    allClasses.map((item, index) => (
-                        <View key={index} style={styles.row}>
-                            <Text style={styles.cell}>{item.teacher}</Text>
-                            <Text style={styles.cell}>{item.grade}</Text>
-                            <Text style={styles.cell}>{item.subject}</Text>
-                            <Text style={styles.cell}>{item.date}</Text>
-                            <Text style={styles.cell}>{item.status}</Text>
-                        </View>
-                    ))
-                )}
-
-                <View style={styles.statsSection}>
-                    <Text style={styles.statsText}>Total Logs Summary: {classcounts.totalclasses}</Text>
-                </View>
+                ))}
             </Page>
         </Document>
     );
 
     return (
-        <div className="font-sans ml-[315px] mb-5 scale-90">
-            <div className="w-[1100px] h-[122px] bg-[#e6eff6] text-[#063a67] rounded-[20px] text-center border-2 border-[#063a67] mt-2.5 flex flex-col items-center justify-center">
-                <img src={logo} alt="Step 2 Scientist Academy" className="w-[180px] h-auto mb-1" />
-                <h1 className="m-0 text-2xl font-bold">Academic Report</h1>
-                <p className="text-sm text-gray-600">{selectedMonth ? `Month: ${selectedMonth}` : 'All Records'}</p>
-            </div>
-
-            <div className="mb-6 mt-6 flex justify-end w-[1100px]">
-                <PDFDownloadLink 
-                    document={<MyDocument allClasses={allClasses} />} 
-                    fileName={`S2S_Report_${selectedMonth || 'all'}.pdf`}
-                    className="text-white cursor-pointer bg-[#063a67] text-center rounded-[12px] p-[10px_25px] outline-none transition-all duration-250 text-[15px] font-bold border-2 border-white hover:bg-gradient-to-r hover:from-[#da4a0c] hover:to-[#e60b45] hover:scale-105 shadow-md no-underline"
-                >
-                    {({ loading }) => (loading ? 'Generating PDF...' : 'Download Report PDF')}
+        <div>
+            <Head />
+            <div className='bodyadr'>
+                <h1 className='h1adr'>My Payments for {selectedMonth || "All"}</h1>
+                <PDFDownloadLink document={<MyDocument />} fileName="payments.pdf" className="pdf-download-button">
+                    {({ loading }) => (loading ? 'Loading...' : 'Download PDF')}
                 </PDFDownloadLink>
-            </div>
 
-            <div className="bg-[#063a67] mt-5 border-2 border-[#063a67] rounded-t-[15px] w-[1100px]">
-                <table className="w-full table-fixed border-collapse">
-                    <thead>
-                        <tr>
-                            <th className="p-[18px_20px] text-left text-lg text-white font-bold">Teacher</th>
-                            <th className="p-[18px_50px] text-left text-lg text-white font-bold">Grade</th>
-                            <th className="p-[18px_10px] text-left text-lg text-white font-bold">Subject</th>
-                            <th className="p-[18px_10px] text-left text-lg text-white font-bold">Date</th>
-                            <th className="p-[18px_10px] text-left text-lg text-white font-bold">Status</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-
-            <div className="h-[333px] overflow-x-auto border-2 border-t-0 border-[#063a67] rounded-b-[15px] w-[1100px] bg-white">
-                <table className="w-full table-fixed border-collapse">
-                    <tbody>
-                        {allClasses.length === 0 ? (
+                <div className="tbl-contentadr">
+                    <table className='tableadr'>
+                        <thead>
                             <tr>
-                                <td colSpan="5" className="p-10 text-center text-gray-400 text-base">No data available.</td>
+                                <th className='thadr'>Student ID</th><th className='thadr'>Description</th><th className='thadr'>Date</th><th className='thadr'>Amount</th><th className='thadr'>Type</th><th className='thadr'>Status</th>
                             </tr>
-                        ) : (
-                            allClasses.map((item, index) => (
-                                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                                    <td className="p-[18px_20px] text-left text-[15px] text-black border-b-2 border-[#063a67] font-bold">{item.teacher}</td>
-                                    <td className="p-[18px_50px] text-left text-[15px] text-black border-b-2 border-[#063a67] font-bold">{item.grade}</td>
-                                    <td className="p-[18px_10px] text-left text-[15px] text-black border-b-2 border-[#063a67] font-bold">{item.subject}</td>
-                                    <td className="p-[18px_10px] text-left text-[15px] text-black border-b-2 border-[#063a67] font-bold">{item.date}</td>
-                                    <td className={`p-[18px_10px] text-left text-[15px] border-b-2 border-[#063a67] font-bold ${item.status === 'Completed' ? 'text-green-600' : 'text-orange-500'}`}>{item.status}</td>
+                        </thead>
+                        <tbody>
+                            {allPayments.map((p) => (
+                                <tr key={p._id}>
+                                    <td className='tdadr'>{p.itnumber}</td><td className='tdadr'>{p.description}</td><td className='tdadr'>{p.date}</td><td className='tdadr'>{p.amount}</td><td className='tdadr'>{p.type}</td><td className='tdadr'>{p.status}</td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="w-[1100px] h-[80px] bg-[#e6eff6] text-black rounded-[20px] border-2 border-[#063a67] mt-6 flex items-center p-5">
-                <p className="text-xl text-black font-bold">Total System Records: {classcounts.totalclasses}</p>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
-};
+}
 
 export default AdReport;

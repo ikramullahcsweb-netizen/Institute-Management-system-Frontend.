@@ -1,113 +1,73 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import './stwallet.css';
+import axios from 'axios';
 import Head from '../Header/Header';
-import { FaWallet, FaUserShield, FaIdCard, FaHashtag, FaCoins } from 'react-icons/fa';
 
 function StWallet() {
-  // Pure Local Mock Static Dataset Structure for Student Wallet Profile
-  const [wallets] = useState([
-    {
-      stdid: "IT23004512",
-      studentname: "Ikram Khan",
-      walletid: "WLT-2026-99041",
-      balance: "Rs. 75,500.00"
-    }
-  ]);
+
+
+  const[wallets , setwallet] = useState([]);
+
+  
+  useEffect(() => {
+    axios.get('/studentprofile')
+      .then((res) => {
+        const stdid = res.data.stdid;
+        axios.get('/displaywallet')
+          .then((res) => {
+            const walletid = res.data.filter(wallet => wallet.stdid === stdid);
+            setwallet(walletid);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-20">
-      <Head />
-      
-      {/* Main Container Frame with Responsive Sidebar Cushion Layout */}
-      <div className="w-full max-w-[1200px] mx-auto px-4 pl-4 md:pl-[290px] mt-8 transition-all">
-        
-        {/* Step-2 Palette Header Banner Block */}
-        <div className="w-full bg-[#C9E8EA] border-2 border-slate-900 rounded-[20px] p-6 text-center shadow-sm mb-8">
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 uppercase tracking-tight flex items-center justify-center gap-3">
-            <FaWallet className="text-slate-800" />
-            <span>My Central Wallet Dashboard</span>
-          </h1>
-        </div>
+    <div>
+      <Head/>
+       <div className="bodywa">
+            <h1 className="h1wa"><br/>My Wallet</h1>
 
-        {/* Dynamic Card Container Matrix */}
-        <div className="w-full flex justify-center">
-          {wallets.map((wallet, index) => (
-            <div 
-              key={index} 
-              className="w-full max-w-[900px] bg-white border-2 border-slate-900 rounded-[22px] p-6 md:p-10 shadow-md transition-all hover:shadow-lg"
-            >
-              <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
-                
-                {/* Field 1: Student ID */}
-                <div className="w-full">
-                  <label className="flex items-center gap-2 text-base font-bold text-slate-900 uppercase tracking-wider mb-2">
-                    <FaIdCard className="text-[#384D6C]" />
-                    <span>Student ID Number</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border-2 border-slate-300 text-slate-800 font-bold text-base px-4 py-3.5 rounded-xl focus:outline-none cursor-not-allowed border-l-4 border-l-[#384D6C]" 
-                    value={wallet.stdid} 
-                    readOnly
-                  />
-                </div>
+            <div className="containerwa">
 
-                {/* Field 2: Student Name */}
-                <div className="w-full">
-                  <label className="flex items-center gap-2 text-base font-bold text-slate-900 uppercase tracking-wider mb-2">
-                    <FaUserShield className="text-[#384D6C]" />
-                    <span>Student Title Name</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border-2 border-slate-300 text-slate-800 font-bold text-base px-4 py-3.5 rounded-xl focus:outline-none cursor-not-allowed border-l-4 border-l-[#384D6C]" 
-                    value={wallet.studentname} 
-                    readOnly
-                  />
-                </div>
+            {wallets.map((wallet) =>(
 
-                {/* Field 3: Wallet Identifier */}
-                <div className="w-full">
-                  <label className="flex items-center gap-2 text-base font-bold text-slate-900 uppercase tracking-wider mb-2">
-                    <FaHashtag className="text-[#384D6C]" />
-                    <span>Wallet Secure Pointer</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border-2 border-slate-300 text-slate-700 font-mono text-base px-4 py-3.5 rounded-xl focus:outline-none cursor-not-allowed border-l-4 border-l-[#384D6C]" 
-                    value={wallet.walletid} 
-                    readOnly
-                  />
-                </div>
+                <form className="paywa">
+                    <br /><br />
+                    <label htmlFor="name" className="labelwa1">Student ID Number</label>
+                    <br />
+                    <input type="text" id="name1" className="textwa1"value={wallet.stdid} readOnly/>
 
-                {/* Field 4: Available Ledger Balance */}
-                <div className="w-full">
-                  <label className="flex items-center gap-2 text-base font-bold text-slate-900 uppercase tracking-wider mb-2">
-                    <FaCoins className="text-amber-500" />
-                    <span>Quantum Ledger Balance</span>
-                  </label>
-                  <div className="relative rounded-xl shadow-sm">
-                    <input 
-                      type="text" 
-                      className="w-full bg-emerald-50/60 border-2 border-emerald-400 text-emerald-800 font-black text-xl px-4 py-4 rounded-xl focus:outline-none cursor-not-allowed tracking-wide" 
-                      value={wallet.balance} 
-                      readOnly
-                    />
-                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                      <span className="text-emerald-600 text-xs font-black uppercase tracking-widest bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
-                        Active
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                    <br /><br /><br />
+                    <label htmlFor="itnum" className="labelwa1">Student Name</label>
 
-              </form>
+                    <br />
+                    <input type="text" id="name1" className="textwa1"value={wallet.studentname} readOnly/>
+          
+                    <br /><br /><br />
+                    <label htmlFor="walletnum" className="labelwa1">Wallet Number</label>
+
+                    <br />
+                    <input type="text" id="name1" className="textwa1"value={wallet.walletid} readOnly/>
+
+                    <br /><br /><br />
+                    <label htmlFor="amount" className="labelwa1">Amount</label>
+
+                    <br />
+                    <input type="text" id="name1" className="textwa1"value={wallet.balance} readOnly/>
+                    <br /><br />
+                </form>
+
+            ))}
             </div>
-          ))}
         </div>
-
-      </div>
     </div>
-  );
+  )
 }
 
-export default StWallet;
+export default StWallet

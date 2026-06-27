@@ -1,247 +1,193 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import toast, { Toaster } from 'react-hot-toast';
+import React, { useState,useEffect } from 'react'
+import './TFeedback.css';
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
+import toast from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
-import { FaUserTie, FaUserGraduate, FaBookOpen, FaGraduationCap, FaCommentAlt, FaPaperPlane } from 'react-icons/fa';
 
 function TFeedback() {
-  // Pure Static Database Simulation States (Mocking profiles fetch logs)
-  const [grade, setGrade] = useState('Grade 10');
+
+  const [grade, setGrade] = useState();
   const [subject, setSubject] = useState('');
+  const [teacherid, setTeacherid] = useState([]);
   const [teacher, setTeacher] = useState('');
-  const [sid, setSid] = useState('SD001');
-  const [tfeedback, setTFeedback] = useState('');
-
-  // Static Pre-populated Teachers List Mapping Stream
-  const [teacherid] = useState([
-    { name: 'Sir Imran', subject: 'Mathematics' },
-    { name: 'Miss Fatima', subject: 'Computer Science' },
-    { name: 'Dr. Arsalan', subject: 'Physics' },
-    { name: 'Prof. Naeem', subject: 'Chemistry' }
-  ]);
-
+  const [sid, setSid] = useState();
+  const [tfeedback, setTFeedback] = useState();
   const navigator = useNavigate();
 
-  // Handle Dynamic Subject Extraction matching Selected Teacher Value
-  useEffect(() => {
-    if (teacher) {
-      const matchFound = teacherid.find(t => t.name === teacher);
-      if (matchFound) {
-        setSubject(matchFound.subject);
-      }
-    } else {
-      setSubject('');
-    }
-  }, [teacher, teacherid]);
+  const submit = (a) =>{
+    a.preventDefault();
+    axios.post('http://localhost:5000/createTF', {
+      grade:grade,
+      subject:subject,
+      teacher:teacher,
+      sid:sid,
+      feedback:tfeedback})
+    .then(res =>{
+      console.log(res);
+      console.log( `Feedback Submitted successfully.`);
+      
+    })
+    .catch(err => console.error(err));
 
-  // Frontend Safe Payload Trigger Simulation
-  const handleFakeSubmitLog = () => {
-    console.log("Mocking Payload State Mutation Array mapped:", {
-      grade,
-      subject,
-      teacher,
-      sid,
-      feedback: tfeedback
+  }
+
+  const handleSubmit = (a) => {
+    a.preventDefault();
+    Swal.fire({
+      title: "Submit Feedback",
+      text: "Are you sure you want to proceed ?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, proceed!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        submit(a); // Call submit function if result is confirmed
+        Swal.fire({
+          title: "Feedback Submitted",
+          icon: "success",
+        });
+        handleClick2();
+      } else {
+        Swal.fire({
+          title: "Failed",
+          icon: "error",
+        });
+        // Call submit function even if result is canceled
+      }
     });
   };
+  
+  
 
-  const executeToastSequenceFeedback = () => {
-    toast.loading('Registering faculty review metric...', {
-      id: 'submitting_teacher_loader',
+  const handleClick2 = () => {
+    toast.loading('Processing...', {
       style: {
-        background: '#0F172A',
-        color: '#ffffff',
-        borderRadius: '12px',
-        border: '2px solid #334155',
-        fontSize: '13px',
-        fontWeight: 'bold',
+        background: 'black', // Customize the background color
+        color: '#ffffff', // Customize the text color
+        borderRadius: '10px', // Add border radius
+        border: '2px solid #ffffff', // Add border
       },
     });
   
     setTimeout(() => {
-      toast.dismiss('submitting_teacher_loader');
-      
-      toast.success('Teacher Evaluation Successfully Sent!', {
-        style: {
-          background: '#136845',
-          color: '#ffffff',
-          borderRadius: '12px',
-          border: '2px solid #1e3a1e',
-          fontSize: '13px',
-          fontWeight: 'bold',
-        },
-        duration: 2000,
-      });
-
+      toast.dismiss();
       setTimeout(() => {
-        navigator('/Feedback');
-      }, 2200);
-    }, 2000);
+        toast.success('Completed!', {
+          style: {
+            background: '#28a745', // Green background color
+            color: '#ffffff', // White text color
+            borderRadius: '10px', // Rounded corners
+            border: '2px solid #ffffff', // White border
+          },
+          duration: 2000, // Display duration in milliseconds (3 seconds)
+          iconTheme: {
+            primary: '#ffffff', // White icon color
+            secondary: '#28a745', // Green icon color
+          },
+        });
+        setTimeout(() => {
+          navigator('/Feedback');
+        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
+      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
+    }, 5000); // Wait for 5 seconds before dismissing loading toast
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  useEffect(()=>{
+    axios.get('/studentprofile')
+    .then((res)=>{
+      setSid(res.data.stdid);   
+      setGrade(res.data.grade);       
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+  },[])
 
-    Swal.fire({
-      title: "Confirm Evaluation?",
-      text: "Do you want to broadcast this performance review to management parameters?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#384D6C",
-      cancelButtonColor: "#4a2032",
-      confirmButtonText: "Yes, submit review",
-      cancelButtonText: "Cancel",
-      background: '#FFFFFF',
-      customClass: {
-        title: 'text-sm font-black uppercase text-slate-800 tracking-tight',
-        popup: 'rounded-2xl border-2 border-slate-900',
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleFakeSubmitLog();
-        Swal.fire({
-          title: "Saved Successfully",
-          text: "Local state array mutated with latest assessment records.",
-          icon: "success",
-          confirmButtonColor: "#384D6C"
-        });
-        executeToastSequenceFeedback();
-      } else {
-        Swal.fire({
-          title: "Log Cancelled",
-          text: "Verification sequence safely dropped.",
-          icon: "error",
-          confirmButtonColor: "#384D6C"
-        });
-      }
-    });
-  };
+  useEffect(()=>{
+    axios.get('/teacherprofileall')
+    .then((res)=>{
+      setTeacherid(res.data);             
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+  },[])
+
+  useEffect(() => {
+    if (teacher) {
+      axios.get('/teacherprofileall')
+        .then(res => {
+          const selectedTeacher = res.data.find(t => t.name === teacher);
+          if (selectedTeacher) {
+            setSubject(selectedTeacher.subject);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [teacher]);
+
+  /*const[questions,setQuestions] = useState([]);
+  useEffect(() => {
+    axios.get('http://localhost:5000/MyQuestions')
+    .then((res) =>{
+      setQuestions(res.data);
+    })
+    .catch((err) => console.error(err));
+  },[]);*/
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-20 font-sans antialiased">
-      {/* Live System Native Notification Desk */}
-      <Toaster position="top-right" reverseOrder={false} />
+    <>
+    <Head/>
+    <h1 className="heading8">We Want to Hear from You - Teacher Feedback</h1>
+    <div >
       
-      {/* Universal Portal Navbar Header */}
-      <Head />
-
-      {/* Grid Canvas Entry Main Frame Block - Using padding to preserve left sidebar gap layouts */}
-      <div className="w-full max-w-[1100px] mx-auto px-4 lg:pl-[290px] mt-8 space-y-6">
+        <body className='uthh1'>
+      
+      <form onSubmit={handleSubmit}>
         
-        {/* Module Title Deck Segment */}
-        <div className="border-b-2 border-slate-200 pb-3">
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2.5">
-            <FaUserTie className="text-[#384D6C]" /> We Want to Hear from You - Teacher Feedback
-          </h2>
-          <div className="h-1 w-16 bg-[#384D6C] rounded-full mt-1.5" />
-        </div>
+        <label htmlFor="grade" className="tt1">Grade</label>        
+        <input id="dropdown1" name="dropdown" value={grade}
+        style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '200px', border: '1px solid #000000', borderRadius: '10px' }}  readOnly/>
+        
+        <label htmlFor="teacher" className="tt2">Select Teacher</label>
+        <select id="dropdown3" name="dropdown" style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '270px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} required onChange={(a)=> setTeacher(a.target.value)}>
+         
+        <option value=""></option>
+        {teacherid.map((teache, index) => (
+          <option key={index} value={teache.name}>{teache.name}</option>
+        ))}
+        </select>
 
-        {/* Evaluation Interactive Form Layout Structure */}
-        <form 
-          onSubmit={handleSubmit}
-          className="bg-white border-2 border-slate-900 rounded-2xl p-6 md:p-8 shadow-sm max-w-3xl space-y-5"
+        <label htmlFor="subject" className="tt3">Subject</label>
+        <input id="dropdown1" name="dropdown" value={subject} style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '346px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }}  onChange={(a)=> setSubject(a.target.value)} readOnly/>
+        
+        <label htmlFor="studentID" className="tt4">Student ID</label>
+        <input type="text" name="sSID" pattern="^SD\d{3}$" title="Please enter 'SD001'" value={sid} style={{ boxSizing: 'border-box', position: 'absolute', width: '351px', height: '53px', left: '636px', top: '448px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} readOnly/>
+        
+        <label htmlFor="feedback" className="tt5">Feedback</label>
+        <textarea
+          id="feedback"
+          required
+          style={{ boxSizing: 'border-box', position: 'absolute', width: '914px', height: '238px', left: '465px', top: '625px', background: '#FFFFFF', border: '1px solid #000000' }}
+          onChange={(a)=> setTFeedback(a.target.value)}
+        ></textarea>
+        <button
+          id="tfeed"
+          className="buttonbb5"
+          
         >
-          {/* Dual Column Parameters Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            
-            {/* Field: Student ID Code Token */}
-            <div className="space-y-1.5">
-              <label htmlFor="student_token" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaUserGraduate className="text-slate-400" /> Student Verification ID
-              </label>
-              <input 
-                id="student_token"
-                type="text" 
-                pattern="^SD\d{3}$" 
-                title="Please enter format matching 'SD001'" 
-                value={sid} 
-                readOnly
-                className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none"
-              />
-            </div>
-
-            {/* Field: Current Student Grade Level */}
-            <div className="space-y-1.5">
-              <label htmlFor="student_grade" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaGraduationCap className="text-slate-400" /> Assigned Student Grade
-              </label>
-              <input 
-                id="student_grade" 
-                type="text" 
-                value={grade} 
-                readOnly
-                className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none"
-              />
-            </div>
-
-            {/* Field: Select Target Faculty Member Dropdown Option */}
-            <div className="space-y-1.5">
-              <label htmlFor="faculty_select" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaUserTie className="text-[#384D6C]" /> Target Faculty Instructor
-              </label>
-              <select 
-                id="faculty_select" 
-                value={teacher}
-                required 
-                onChange={(e) => setTeacher(e.target.value)}
-                className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3.5 focus:outline-none transition-colors appearance-none cursor-pointer"
-              >
-                <option value="">-- Choose Assigned Teacher --</option>
-                {teacherid.map((inst, idx) => (
-                  <option key={idx} value={inst.name}>{inst.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Field: Auto Loaded Assigned Course Subject Code */}
-            <div className="space-y-1.5">
-              <label htmlFor="faculty_subject" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaBookOpen className="text-slate-400" /> Core Department Course
-              </label>
-              <input 
-                id="faculty_subject" 
-                type="text" 
-                value={subject} 
-                placeholder="Select teacher to map course payload..."
-                readOnly
-                className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none italic"
-              />
-            </div>
-
-          </div>
-
-          {/* Field: Rich Assessment Statement Content Textarea */}
-          <div className="space-y-1.5">
-            <label htmlFor="feedback_statement" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-              <FaCommentAlt className="text-slate-400" /> Evaluation Performance Review Statement
-            </label>
-            <textarea
-              id="feedback_statement"
-              rows="6"
-              placeholder="Elaborate details regarding classroom management, logic delivery, practice sheets availability, or custom instructional reviews..."
-              required
-              value={tfeedback}
-              onChange={(e) => setTFeedback(e.target.value)}
-              className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl p-4 focus:outline-none transition-colors shadow-inner resize-none min-h-[140px]"
-            ></textarea>
-          </div>
-
-          {/* Bottom Call-To-Action Dispatch Control Dashboard Layout Row */}
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
-            <button
-              type="submit"
-              className="w-full sm:w-auto bg-[#384D6C] hover:bg-[#2b3b54] text-white font-black text-xs uppercase tracking-widest py-3.5 px-8 rounded-xl border-2 border-slate-950 shadow-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] border-b-4 active:border-b-2"
-            >
-              <FaPaperPlane className="text-[10px]" /> Dispatch Faculty Assessment
-            </button>
-          </div>
-
-        </form>
-
-      </div>
+          Submit
+        </button>
+      </form>
+    </body>
     </div>
-  );
+    </>
+  )
 }
 
-export default TFeedback;
+export default TFeedback

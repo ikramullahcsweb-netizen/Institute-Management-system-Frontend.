@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import Head from '../Header/Header';
 import jsPDF from 'jspdf';
 
 function Attend() {
-  // Static mock arrays representing core structured database tokens
-  const [enrollments] = useState([
-    { _id: "1", studentId: "STD-041", classId: "CLS-101", teacherid: "TCH-012", subject: "Mathematics", grade: "Grade 10" },
-    { _id: "2", studentId: "STD-082", classId: "CLS-102", teacherid: "TCH-019", subject: "General Science", grade: "Grade 11" }
-  ]);
-  
-  const [attendances, setAttendances] = useState([
-    { _id: "a1", studentId: "STD-041", classId: "CLS-101", date: "05/19/2026", time: "09:15 AM" },
-    { _id: "a2", studentId: "STD-082", classId: "CLS-102", date: "05/19/2026", time: "10:30 AM" }
-  ]);
+  const [enrollments, setEnrollments] = useState([]);
+  const [attendances, setAttendances] = useState([]);
+  const [, setManagerName] = useState('');
+  const [, setManagerUsername] = useState('');
 
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState('');
   const [todayDate, setTodayDate] = useState('');
+
+  useEffect(() => {
+    fetchEnrollments();
+    fetchAttendances();
+    fetchManagerDetails(); // Fetch manager details when component mounts
+  }, []);
 
   useEffect(() => {
     const today = new Date();
@@ -28,27 +29,55 @@ function Attend() {
     setTodayDate(formattedDate);
   }, []);
 
+  const fetchManagerDetails = async () => {
+    try {
+      const response = await axios.get('/managerdetails');
+      setManagerName(response.data.name);
+      setManagerUsername(response.data.username);
+    } catch (error) {
+      console.error('Error fetching manager details:', error);
+      toast.error('Failed to fetch manager details');
+    }
+  };
+
+  const fetchEnrollments = async () => {
+    try {
+      const response = await axios.get('/classenrollments');
+      setEnrollments(response.data);
+    } catch (error) {
+      console.error('Error fetching enrollments:', error);
+      toast.error('Failed to fetch enrollments');
+    }
+  };
+
+  const fetchAttendances = async () => {
+    try {
+      const response = await axios.get('/attendancemark');
+      setAttendances(response.data);
+    } catch (error) {
+      console.error('Error fetching attendances:', error);
+      toast.error('Failed to fetch attendances');
+    }
+  };
+
   const handleSearch = (e) => {
     setSearch(e.target.value.toLowerCase());
   };
 
-  const markAttendance = (enrollment) => {
-    const today = new Date();
-    const hours = today.getHours();
-    const minutes = String(today.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedTime = `${hours % 12 || 12}:${minutes} ${ampm}`;
-
-    const newAttendance = {
-      _id: Date.now().toString(),
-      studentId: enrollment.studentId,
-      classId: enrollment.classId,
-      date: todayDate,
-      time: formattedTime
-    };
-
-    setAttendances(prev => [newAttendance, ...prev]);
-    toast.success(`Attendance marked successfully for ${enrollment.studentId}`);
+  const markAttendance = async (enrollment) => {
+    try {
+      await axios.post('/attendancemark', {
+        studentId: enrollment.studentId,
+        classId: enrollment.classId,
+        teacherId: enrollment.teacherid,
+        subject: enrollment.subject
+      });
+      toast.success('Attendance marked successfully');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error marking attendance:', error);
+      toast.error('Failed to mark attendance');
+    }
   };
 
   const handleDateFilter = (e) => {
@@ -61,17 +90,20 @@ function Attend() {
     )
   );
 
-  const filteredAttendances = attendances.filter((attendance) => {
-    if (!dateFilter) return true;
-    // Converting YYYY-MM-DD input filter token to compare against MM/DD/YYYY standard format
-    const [year, month, day] = dateFilter.split('-');
-    const formattedFilter = `${month}/${day}/${year}`;
-    return attendance.date === formattedFilter;
-  });
+  const filteredAttendances = attendances.filter((attendance) =>
+    dateFilter ? attendance.date.includes(dateFilter) : true
+  );
 
-  const handleClearAttendance = () => {
-    setAttendances([]);
-    toast.success('Attendance directory simulation cleared successfully');
+  const handleClearAttendance = async () => {
+    try {
+      await axios.delete('/attendancemark/all');
+      setAttendances([]);
+      toast.success('Attendance cleared successfully');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error clearing attendance:', error);
+      toast.error('Failed to clear attendance');
+    }
   };
 
   const generatePDF = () => {
@@ -80,14 +112,14 @@ function Attend() {
     const formattedDate = `${currentDate.getFullYear()}-${currentDate.getMonth() + 1}-${currentDate.getDate()}`;
     doc.text('Attendance Report', 10, 10);
     doc.text(`Report Generated On:${formattedDate}`, 10, 40);
-    
+
     let yPos = 50;
     doc.autoTable({
       head: [['Student ID', 'Class ID', 'Teacher ID', 'Subject', 'Grade']],
       body: filteredEnrollments.map(enrollment => [enrollment.studentId, enrollment.classId, enrollment.teacherid, enrollment.subject, enrollment.grade]),
       startY: yPos
     });
-    
+
     yPos = doc.autoTable.previous.finalY + 10;
     doc.autoTable({
       head: [['Student ID', 'Class ID', 'Date', 'Time']],
@@ -102,13 +134,13 @@ function Attend() {
       <Head />
 
       <div className="w-full max-w-[1100px] mx-auto px-4 mt-6">
-        
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-gray-200 pb-4 mb-6 ">
           <div>
             <h1 className="text-2xl font-black text-[#13293d] tracking-tight uppercase">Attendance Management</h1>
-            <p className="text-xs text-gray-500 font-medium">Mark, view, and extract management reports (Frontend Mode)</p>
+            <p className="text-xs text-gray-500 font-medium">Mark, view, and extract management reports</p>
           </div>
-          <button 
+          <button
             className="w-full sm:w-auto bg-[#10a1b6] hover:bg-[#0e8a9c] text-white text-sm font-bold py-2.5 px-5 rounded-xl shadow-sm transition-all duration-200"
             onClick={generatePDF}
           >
@@ -117,12 +149,12 @@ function Attend() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+
           <div className="lg:col-span-7 bg-white border-2 border-slate-200 rounded-[20px] shadow-sm overflow-hidden">
             <div className="bg-slate-100 px-5 py-4 border-b border-slate-200">
               <h2 className="text-sm font-black text-[#13293d] uppercase tracking-wider">Mark Student Attendance</h2>
             </div>
-            
+
             <div className="p-5">
               <input
                 type="text"
@@ -131,7 +163,7 @@ function Attend() {
                 value={search}
                 onChange={handleSearch}
               />
-              
+
               <div className="overflow-x-auto max-h-[350px] overflow-y-auto border border-slate-100 rounded-xl">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead className="bg-slate-50 text-gray-600 uppercase font-bold sticky top-0 border-b border-slate-200">
@@ -153,8 +185,8 @@ function Attend() {
                         <td className="p-3 font-medium">{enrollment.subject}</td>
                         <td className="p-3"><span className="px-2 py-0.5 bg-slate-100 rounded text-gray-600 font-bold">{enrollment.grade}</span></td>
                         <td className="p-3 text-center">
-                          <button 
-                            className="bg-[#10a1b6] hover:bg-[#1b5592] text-white font-bold px-3 py-1.5 rounded-lg transition-colors shadow-xs" 
+                          <button
+                            className="bg-[#10a1b6] hover:bg-[#1b5592] text-white font-bold px-3 py-1.5 rounded-lg transition-colors shadow-xs"
                             onClick={() => markAttendance(enrollment)}
                           >
                             Mark
@@ -173,7 +205,7 @@ function Attend() {
               <div className="bg-slate-100 px-5 py-4 border-b border-slate-200">
                 <h2 className="text-sm font-black text-[#13293d] uppercase tracking-wider">View Attendance Registry</h2>
               </div>
-              
+
               <div className="p-5">
                 <input
                   type="date"
@@ -182,7 +214,7 @@ function Attend() {
                   value={dateFilter}
                   onChange={handleDateFilter}
                 />
-                
+
                 <div className="overflow-x-auto max-h-[265px] overflow-y-auto border border-slate-100 rounded-xl">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead className="bg-slate-50 text-gray-600 uppercase font-bold sticky top-0 border-b border-slate-200">
@@ -208,8 +240,8 @@ function Attend() {
               </div>
             </div>
 
-            <button 
-              className="w-full bg-red-50 hover:bg-red-100 border-2 border-dashed border-red-300 text-red-600 font-bold py-3 px-4 rounded-[16px] text-sm transition-all duration-200 uppercase tracking-wider" 
+            <button
+              className="w-full bg-red-50 hover:bg-red-100 border-2 border-dashed border-red-300 text-red-600 font-bold py-3 px-4 rounded-[16px] text-sm transition-all duration-200 uppercase tracking-wider"
               onClick={handleClearAttendance}
             >
               Clear Attendance Registry

@@ -23,7 +23,7 @@ function Nav() {
 
   return (
     <div className="font-sans">
-      <div className="fixed top-0 left-0 h-full w-[250px] bg-white border-r-2 border-gray-100 pt-[30px] px-5 z-50 shadow-sm flex flex-col justify-between">
+      <div className="fixed top-0 left-0 h-full md:w-[250px] w-[170px] bg-white border-r-2 border-gray-100 pt-[30px] px-5 z-50 shadow-sm flex flex-col justify-between">
         
         <div>
           {/* S2S Academy Identity Header Label */}

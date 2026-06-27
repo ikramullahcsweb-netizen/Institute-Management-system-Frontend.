@@ -1,117 +1,184 @@
-import React from 'react';
-import { FaGraduationCap, FaBook, FaUserTie, FaIdCard, FaQuestionCircle, FaPaperPlane } from 'react-icons/fa';
+import React, { useState , useEffect } from 'react'
+import './AddQuestion.css';
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
+import Swal from 'sweetalert2';
+import Head from '../Header/Header';
 
-function AddQuestionForm() {
+
+function AddQuestion() {
+
+
+  const [teacher, setTeacher] = useState();
+  const [question, setQuestion] = useState();
+  const [idnumber, setName] = useState();
+  const [teacherid, setteacherid] = useState([]);
+  const [subject, setSubject] = useState('');
+  const [sgrade, setgrade] = useState();
+  const navigator = useNavigate();
+
+//button function
+  const submit = (a) =>{
+    a.preventDefault();
+    axios.post('http://localhost:5000/createQ', {
+      grade:sgrade,
+      subject:subject,
+      teacher:teacher,
+      sid:idnumber,
+      question:question
+    })
+    .then(res =>{
+      console.log(res);
+    })
+    .catch(err => console.error(err));
+
+  }
+
+  const handleSubmit = (a) => {
+    a.preventDefault();
+    Swal.fire({
+      title: "Submit Question",
+      text: "Are you sure you want to proceed ?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, proceed!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        submit(a); // Call submit function if result is confirmed
+        Swal.fire({
+          title: "Question Submitted",
+          icon: "success",
+        });
+        handleClick2();
+      } else {
+        Swal.fire({
+          title: "Failed",
+          icon: "error",
+        });
+        // Call submit function even if result is canceled
+      }
+    });
+  };
+  
+  
+
+  const handleClick2 = () => {
+    toast.loading('Processing...', {
+      style: {
+        background: 'black', // Customize the background color
+        color: '#ffffff', // Customize the text color
+        borderRadius: '10px', // Add border radius
+        border: '2px solid #ffffff', // Add border
+      },
+    });
+  
+    setTimeout(() => {
+      toast.dismiss();
+      setTimeout(() => {
+        toast.success('Completed!', {
+          style: {
+            background: '#28a745', // Green background color
+            color: '#ffffff', // White text color
+            borderRadius: '10px', // Rounded corners
+            border: '2px solid #ffffff', // White border
+          },
+          duration: 2000, // Display duration in milliseconds (3 seconds)
+          iconTheme: {
+            primary: '#ffffff', // White icon color
+            secondary: '#28a745', // Green icon color
+          },
+        });
+        setTimeout(() => {
+          navigator('/question');
+        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
+      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
+    }, 5000); // Wait for 5 seconds before dismissing loading toast
+  };
+
+  
+  
+
+  useEffect(()=>{
+    axios.get('/studentprofile')
+    .then((res)=>{
+        setName(res.data.stdid);   
+        setgrade(res.data.grade);       
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+  },[])
+
+  
+  useEffect(()=>{
+    axios.get('/teacherprofileall')
+    .then((res)=>{
+        setteacherid(res.data);             
+    })
+    .catch((err)=>{
+        console.log(err);
+    })
+  },[])
+
+    
+  useEffect(() => {
+    if (teacher) {
+      axios.get('/teacherprofileall')
+        .then(res => {
+          const selectedTeacher = res.data.find(t => t.name === teacher);
+          if (selectedTeacher) {
+            setSubject(selectedTeacher.subject);
+          }
+        })
+        .catch(err => console.error(err));
+    }
+  }, [teacher]);
+
   return (
-    <div className="w-full bg-slate-50 min-h-screen py-10 px-4 font-sans antialiased">
-      <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div>
+      <Head/>
+      <text className='heading2'>Connect with your teachers - Add Your Question</text>
+    <div className='udth3'>
+      
+    <Toaster/>
+    <div  >
+      <form onSubmit={handleSubmit}>
+      
         
-        {/* Step-Up Branded Module Headline Plate */}
-        <div className="border-b-2 border-slate-200 pb-3">
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2">
-            <FaQuestionCircle className="text-[#384D6C]" /> Connect With Teachers
-          </h2>
-          <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-            Submit your specific academic queries to the portal
-          </p>
-        </div>
+        <label htmlFor="dropdown1" className='t1'>Grade</label>
+        <input id="dropdown1" name="dropdown" value={sgrade}
+        style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '205px', border: '1px solid #000000', borderRadius: '10px' }}  readOnly/>
+          
+          <label htmlFor="dropdown3" className='t2'>Select Teacher</label>
+        <select id="dropdown3" name="dropdown" style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '279px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} required onChange={(a)=> setTeacher(a.target.value)}>
+         
+        <option value=""></option>
+        {teacherid.map((teacher, index) => (
+          <option key={index} value={teacher.name}>{teacher.name}</option>
+        ))}
+        </select>
+        
+        <label htmlFor="dropdown2" className='t3'>Subject</label>
+        <input id="dropdown1" name="dropdown" value={subject} style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '360px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }}  onChange={(a)=> setSubject(a.target.value)} readOnly/>
+                        
+        <text className='t5'>Student ID</text>
+        <input type="text" name="sSID" pattern="^SD\d{3}$" title="Please enter 'SD001'" value={idnumber} style={{ boxSizing: 'border-box', position: 'absolute', width: '351px', height: '53px', left: '636px', top: '451px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} readOnly/>
 
-        {/* Master Controlled Content Data Sheet Container */}
-        <div className="bg-white border-2 border-slate-900 rounded-2xl p-6 md:p-8 shadow-sm">
-          <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
-            
-            {/* Input Selection Block Layer: Select Grade */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaGraduationCap className="text-slate-400 text-sm" /> Academic Grade
-              </label>
-              <div className="relative">
-                <select className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3.5 focus:outline-none transition-colors appearance-none cursor-pointer">
-                  <option value="">Select Enrolled Grade Target</option>
-                  <option value="9">Grade 9</option>
-                  <option value="10">Grade 10</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Input Selection Block Layer: Select Subject */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaBook className="text-slate-400 text-xs" /> Subject Module
-              </label>
-              <div className="relative">
-                <select className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3.5 focus:outline-none transition-colors appearance-none cursor-pointer">
-                  <option value="">Select Subject Parameter</option>
-                  <option value="math">Mathematics Matrix</option>
-                  <option value="cs">Computer Science Architecture</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Input Selection Block Layer: Select Teacher */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaUserTie className="text-slate-400 text-xs" /> Designated Instructor
-              </label>
-              <div className="relative">
-                <select className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3.5 focus:outline-none transition-colors appearance-none cursor-pointer">
-                  <option value="">Select Target Faculty Member</option>
-                  <option value="t1">Sir Imran Dev Node</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                  <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Input Selection Block Layer: Student Identity Key Code */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-dashed border-slate-200">
-              <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                  <FaIdCard className="text-slate-400 text-xs" /> Verified Student ID
-                </label>
-                <input 
-                  type="text" 
-                  value="SID-2026-MOCK" 
-                  className="w-full bg-slate-100 border-2 border-slate-200 text-[#0C7FDA] font-mono font-black text-xs rounded-xl px-4 py-3.5 cursor-not-allowed select-none shadow-inner"
-                  readOnly 
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                  <FaQuestionCircle className="text-slate-400 text-xs" /> Question Topic Key
-                </label>
-                <input 
-                  type="text" 
-                  placeholder="e.g. Core Array Traversal" 
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3.5 focus:outline-none transition-colors placeholder:text-slate-400 placeholder:font-medium"
-                />
-              </div>
-            </div>
-
-            {/* Action Panel Framework Buttons Row Layout */}
-            <div className="flex justify-end pt-4 border-t-2 border-slate-100">
-              <button 
-                type="submit" 
-                className="w-full sm:w-auto bg-[#384D6C] hover:bg-[#2e3e56] text-white text-xs font-black uppercase tracking-widest px-8 py-4 rounded-xl border-2 border-slate-950 flex items-center justify-center gap-2 transition-transform active:scale-[0.99] shadow-md"
-              >
-                <FaPaperPlane className="text-xs" /> Submit Question Node
-              </button>
-            </div>
-
-          </form>
-        </div>
-
-      </div>
+        
+        <text className='t6'>Question</text>
+        <input type="text" name="sQuestion" style={{ boxSizing: 'border-box', position: 'absolute', width: '920px', height: '219px', left: '459px', top: '610px', border: '1px solid #000000', borderRadius: '10px' }} required placeholder='Enter your Question' onChange={(a)=> setQuestion(a.target.value)}/>
+        
+        <button name="qSubmit"  className="buttonbb1">Submit</button>
+      
+      </form> 
     </div>
-  );
+    </div>
+    </div>
+  )
 }
 
-export default AddQuestionForm;
+export default AddQuestion

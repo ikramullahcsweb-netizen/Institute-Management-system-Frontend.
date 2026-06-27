@@ -114,7 +114,7 @@ function StudentRegister() {
                 Create Account
               </h2>
               <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Welcome to Royal Academy Academic System
+                Welcome to step 2 scientist
               </p>
             </div>
           </div>
@@ -184,7 +184,7 @@ function StudentRegister() {
                     onChange={(e) => setData({...data, grade: e.target.value})}
                   >
                     <option value="" className="font-medium text-slate-400">Select Enrolled Grade</option>
-                    <option value="6">Grade 6 (Middle Block)</option>
+                    <option value="6"> (Middle Block)</option>
                     <option value="7">Grade 7 (Middle Block)</option>
                     <option value="8">Grade 8 (Middle Block)</option>
                     <option value="9">Grade 9 (Senior Metric)</option>
@@ -227,7 +227,7 @@ function StudentRegister() {
                 </div>
               </div>
 
-              {/* Field Group Array: Cryptographic Security Password Blocks */}
+              
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-200">
                 <div className="space-y-1">
                   <label htmlFor="password" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">

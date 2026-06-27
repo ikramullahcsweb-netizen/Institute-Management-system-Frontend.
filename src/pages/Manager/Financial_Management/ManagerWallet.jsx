@@ -2,171 +2,109 @@ import React, { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; 
 import logo from "../../../assets/step2 scientist logo.jpeg";
 
 function ManagerWallet() {
   const navigate = useNavigate();
-
-  const walletData = [
-    {
-      id: 1,
-      stdid: "SID123456",
-      walletid: "WALLET-101",
-      balance: "5000",
-    },
-    {
-      id: 2,
-      stdid: "SID654321",
-      walletid: "WALLET-102",
-      balance: "2500",
-    },
-  ];
-
   const [itnumber, setItnumber] = useState("");
-  const [walletId, setWalletId] = useState([]);
+  const [walletData, setWalletData] = useState(null);
   const [date, setDate] = useState("");
 
+  const API_URL = "http://localhost:3000";
+
   useEffect(() => {
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    let mm = today.getMonth() + 1;
-    let dd = today.getDate();
-
-    if (mm < 10) mm = "0" + mm;
-    if (dd < 10) dd = "0" + dd;
-
-    setDate(`${yyyy}-${mm}-${dd}`);
+    setDate(new Date().toISOString().split('T')[0]);
   }, []);
 
-  const handlesearch = (e) => {
+  // Update: /displaywallet route ke saath integration
+  const handlesearch = async (e) => {
     e.preventDefault();
-
-    const filteredWallet = walletData.filter(
-      (wallet) => wallet.stdid === itnumber,
-    );
-
-    setWalletId(filteredWallet);
-
-    filteredWallet.length === 0
-      ? toast.error("Wallet Not Found")
-      : toast.success("Wallet Found");
+    try {
+      // Backend route: /displaywallet/${itnumber}
+      const res = await axios.get(`${API_URL}/displaywallet/${itnumber}`);
+      setWalletData(res.data);
+      toast.success("Wallet Found");
+    } catch (err) {
+      setWalletData(null);
+      toast.error("Wallet Not Found or Error");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
     Swal.fire({
       title: "Confirm Payment",
-      text: "Are you sure?",
+      text: "Are you sure you want to confirm?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#1DB6D9",
-      cancelButtonColor: "#7ED957",
+      cancelButtonColor: "#d33",
       confirmButtonText: "Yes",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        toast.success("Wallet Confirmed");
-
-        setTimeout(() => {
-          navigate("/managerfinancial");
-        }, 1500);
+        try {
+          // Confirm karne ke liye route
+          await axios.post(`${API_URL}/displaywallet/confirm`, { 
+            walletid: walletData.walletid 
+          });
+          toast.success("Wallet Confirmed");
+          setTimeout(() => navigate("/managerfinancial"), 1500);
+        } catch (err) {
+          toast.error("Failed to confirm");
+        }
       }
     });
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 py-2">
+    <div className="min-h-screen bg-white p-4 md:p-8">
       <Toaster />
-
-      {/* LOGO */}
-      <div className="flex justify-center">
-        <div className="w-[220px] h-[220px] rounded-full border-4 border-[#1DB6D9] flex items-center justify-center">
-          <img src={logo} alt="logo" className="w-40" />
+      <div className="max-w-3xl mx-auto">
+        <div className="flex justify-center mb-8">
+          <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#1DB6D9] flex items-center justify-center overflow-hidden">
+            <img src={logo} alt="logo" className="w-24 md:w-28" />
+          </div>
         </div>
-      </div>
 
-      {/* TITLE */}
-      <div className="max-w-5xl mx-auto mt-2 bg-[#DDF7F8] border border-black rounded-2xl py-3">
-        <h1 className="text-center text-3xl font-bold text-[#1DB6D9]">
-          Wallet
-        </h1>
-      </div>
+        <div className="bg-[#DDF7F8] border border-black rounded-2xl py-3 mb-6">
+          <h1 className="text-center text-2xl md:text-3xl font-bold text-[#1DB6D9]">Wallet</h1>
+        </div>
 
-      {/* SEARCH */}
-      <div className="max-w-5xl mx-auto mt-3">
-        <form
-          onSubmit={handlesearch}
-          className="bg-[#DDF7F8] border border-black rounded-2xl p-4"
-        >
-          <label className="block text-lg font-bold mb-2">
-            Enter IT Number
-          </label>
-
+        <form onSubmit={handlesearch} className="bg-[#DDF7F8] border border-black rounded-2xl p-6 mb-6">
+          <label className="block text-lg font-bold mb-2">Enter IT Number</label>
           <input
             type="text"
             placeholder="SID123456"
             required
             value={itnumber}
             onChange={(e) => setItnumber(e.target.value)}
-            className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
+            className="w-full border border-black rounded-xl p-3 outline-none"
           />
-
-          <button
-            type="submit"
-            className="w-full mt-4 bg-[#384D6C] hover:bg-[#1DB6D9] text-white py-3 rounded-xl font-bold transition-all"
-          >
+          <button type="submit" className="w-full mt-4 bg-[#384D6C] text-white py-3 rounded-xl font-bold hover:bg-[#1DB6D9]">
             Search
           </button>
         </form>
 
-        {/* WALLET DATA */}
-        {walletId.map((wall) => (
-          <form
-            key={wall.id}
-            onSubmit={handleSubmit}
-            className="mt-3 bg-[#DDF7F8] border border-black rounded-2xl p-4"
-          >
+        {walletData && (
+          <form onSubmit={handleSubmit} className="bg-[#DDF7F8] border border-black rounded-2xl p-6 animate-fadeIn">
             <div className="mb-4">
               <label className="block text-lg font-bold mb-2">Wallet ID</label>
-
-              <input
-                type="text"
-                value={wall.walletid}
-                readOnly
-                className="w-full border border-black rounded-xl p-3 bg-white"
-              />
+              <input type="text" value={walletData.walletid} readOnly className="w-full border border-black rounded-xl p-3 bg-white" />
             </div>
-
             <div className="mb-4">
               <label className="block text-lg font-bold mb-2">Date</label>
-
-              <input
-                type="date"
-                value={date}
-                readOnly
-                className="w-full border border-black rounded-xl p-3 bg-white"
-              />
+              <input type="date" value={date} readOnly className="w-full border border-black rounded-xl p-3 bg-white" />
             </div>
-
             <div className="mb-4">
               <label className="block text-lg font-bold mb-2">Amount</label>
-
-              <input
-                type="text"
-                value={wall.balance}
-                readOnly
-                className="w-full border border-black rounded-xl p-3 bg-white"
-              />
+              <input type="text" value={walletData.balance} readOnly className="w-full border border-black rounded-xl p-3 bg-white" />
             </div>
-
-            <button
-              type="submit"
-              className="w-full bg-[#384D6C] hover:bg-red-600 text-white py-3 rounded-xl font-bold transition-all"
-            >
+            <button type="submit" className="w-full bg-[#384D6C] text-white py-3 rounded-xl font-bold hover:bg-red-600">
               Confirm
             </button>
           </form>
-        ))}
+        )}
       </div>
     </div>
   );

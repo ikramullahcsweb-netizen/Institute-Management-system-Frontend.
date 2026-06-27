@@ -1,105 +1,284 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Head from '../Header/Header';
+import axios from 'axios';
+import Head from '../Header/Header'
+
 import Swal from 'sweetalert2';
-import { FaArrowCircleDown, FaEdit } from "react-icons/fa";
+import './MyClasses.css';
+
+
+
+//icons
+import { FaArrowCircleDown } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import { IoIosAddCircle, IoIosArrowDroprightCircle } from "react-icons/io";
+import { FaEdit } from "react-icons/fa";
+import { IoIosAddCircle } from "react-icons/io";
+import { IoIosArrowDroprightCircle } from "react-icons/io";
+
+
+
 
 function MyClasses() {
+  const [notices, setNotices] = useState([]);
+  const [materials, setMaterials] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [teacher, setTeacher] = useState('');
+  const [subject, setSubject] = useState('');
 
-  // Front-end UI Test karne ke liye Pure Static Data Sets
-  const [notices, setNotices] = useState([
-    { _id: 'n1', grade: 8, date: '2026-05-18', topic: 'Midterm Exam Notice', description: 'Syllabus includes chapters 1 to 4.' },
-    { _id: 'n2', grade: 10, date: '2026-05-19', topic: 'Practical Submission', description: 'Bring files by Friday afternoon.' }
-  ]);
+  useEffect(() => {
+    axios.get('http://localhost:3000/viewnotice')
+      .then(res => {
+        setNotices(res.data);
+      })
+      .catch(err => console.error(err));
 
-  const [materials, setMaterials] = useState([
-    { _id: 'm1', grade: 8, lesson_date: '2026-05-15', lesson_topic: 'Algebra Basics Lecture Note', lesson_description: 'PDF covering foundational formulas.' },
-    { _id: 'm2', grade: 11, lesson_date: '2026-05-17', lesson_topic: 'Organic Chemistry Presentation', lesson_description: 'PPT deck covering Hydrocarbons.' }
-  ]);
+    axios.get('http://localhost:3000/showmaterials')
+      .then(res => {
+        setMaterials(res.data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  useEffect(() => {
+    axios.get('/teacherprofile')
+      .then((res) => {
+        const tid = res.data.teid;
+
+        axios.get('/viewnotice')
+          .then((noticeRes) => {
+            const viewnotice = noticeRes.data.filter(viewnotices => viewnotices.teacher_id === tid);
+            setNotices(viewnotice);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+
+        axios.get('/showmaterials')
+          .then((materialsRes) => {
+            const viewmaterials = materialsRes.data.filter(viewmaterials => viewmaterials.teacher_id === tid);
+            setMaterials(viewmaterials);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   const handleDeleteNotice = (id) => {
-    Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#483EA8', confirmButtonText: 'Delete' })
-      .then((r) => { if (r.isConfirmed) setNotices(prev => prev.filter(n => n._id !== id)); });
-  };
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Are you sure you want to delete this notice?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.delete('http://localhost:3000/deletenotice/' + id)
+          .then((res) => {
+            console.log('success');
+            Swal.fire(
+              'Deleted!',
+              'Your notice has been deleted.',
+              'success'
+            ).then(() => {
+              window.location.reload();
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            Swal.fire(
+              'Error!',
+              'An error occurred while deleting the notice.',
+              'error'
+            );
+          });
+      }
+    });
+  }
 
   const handleDeleteMaterial = (id) => {
-    Swal.fire({ title: 'Are you sure?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#483EA8', confirmButtonText: 'Delete' })
-      .then((r) => { if (r.isConfirmed) setMaterials(prev => prev.filter(m => m._id !== id)); });
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "Are you sure you want to delete this material?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios.delete('http://localhost:3000/deletematerial/' + id)
+          .then((res) => {
+            console.log('success');
+            Swal.fire(
+              'Deleted!',
+              'Your material has been deleted.',
+              'success'
+            ).then(() => {
+              window.location.reload();
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            Swal.fire(
+              'Error!',
+              'An error occurred while deleting the material.',
+              'error'
+            );
+          });
+      }
+    });
+  }
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
   };
 
-  const filteredMaterials = materials.filter(m => m.lesson_topic.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredMaterials = materials.filter(material =>
+    material.lesson_topic.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const noticesByGrade = {};
   const materialsByGrade = {};
-  notices.forEach(n => { (noticesByGrade[n.grade] = noticesByGrade[n.grade] || []).push(n); });
-  filteredMaterials.forEach(m => { (materialsByGrade[m.grade] = materialsByGrade[m.grade] || []).push(m); });
+
+  notices.forEach(notice => {
+    if (!noticesByGrade[notice.grade]) {
+      noticesByGrade[notice.grade] = [];
+    }
+    noticesByGrade[notice.grade].push(notice);
+  });
+
+  filteredMaterials.forEach(material => {
+    if (!materialsByGrade[material.grade]) {
+      materialsByGrade[material.grade] = [];
+    }
+    materialsByGrade[material.grade].push(material);
+  });
+
+  const renderNotices = () => {
+    const noticeComponents = [];
+    for (let grade = 6; grade <= 11; grade++) {
+      if (noticesByGrade[grade]) {
+        noticeComponents.push(
+          <div key={`grade-${grade}`}>
+            <h3 style={{ color: '#191970' }}>Grade {grade} Notices</h3>
+            <hr />
+            {noticesByGrade[grade].map(notice => (
+              <div className="notice" key={notice._id}>
+               
+                <div className="notice-date">{notice.date}</div>
+                <br />
+                <div className="notice-title">{notice.topic}</div>
+                <div className="notice-description">{notice.description}</div>
+                <Link to={`/editnotice/${notice._id}`} className="edit_button">Edit Notice <FaEdit style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /></Link>
+                <button className="delete_button" onClick={(e) => handleDeleteNotice(notice._id)}>Delete Notice <MdDelete style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /> </button>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }
+    return noticeComponents;
+  };
+
+  const renderMaterials = () => {
+    const materialComponents = [];
+    for (let grade = 6; grade <= 11; grade++) {
+      if (materialsByGrade[grade]) {
+        materialComponents.push(
+          <div key={`grade-${grade}`}>
+            <h3 style={{ color: '#191970' }}>Grade {grade} Materials</h3>
+            <hr />
+
+            {materialsByGrade[grade].map(material => (
+              <div className="lesson" key={material._id}>
+               
+                <div className="lesson-date">Date: {material.lesson_date}</div>
+                <br />
+                <div className="lesson-title">{material.lesson_topic}</div>
+                <div className="lesson-description">  {material.lesson_description}</div>
+                <button className="material_link" onClick={() => showFile(material.lesson_Files)}>View Material <IoIosArrowDroprightCircle style={{ marginTop: '5px', marginLeft: '2px', fontSize: '12px' }} /></button>
+                <button className="material_link" onClick={() => downloadFile(material.lesson_Files)} >Download <FaArrowCircleDown style={{ marginTop: '5px', marginLeft: '2px', fontSize: '12px' }} /></button>
+                <Link to={`/editmaterial/${material._id}`} className="edit_button">Edit Material <FaEdit style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /></Link>
+                <button className="delete_button" onClick={(e) => handleDeleteMaterial(material._id)}>Delete Notice <MdDelete style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /> </button>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }
+    return materialComponents;
+  };
+
+  const showFile = (lesson_Files) => {
+    window.open(`http://localhost:3000/files/${lesson_Files}`, "_blank", "noreferrer");
+  };
+
+  const downloadFile = async (lesson_Files) => {
+    try {
+      const url = `http://localhost:3000/files/${lesson_Files}`;
+      const response = await axios.get(url, {
+        responseType: 'blob'
+      });
+      const file = new Blob([response.data]);
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(file);
+      link.setAttribute('download', lesson_Files);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+    }
+  };
+
+  useEffect(() => {
+    axios.get('/teacherprofile')
+      .then((res) => {
+        setTeacher(res.data.name);
+        setSubject(res.data.subject);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-16">
+    <div>
       <Head />
-      <div className="w-full max-w-[1350px] mx-auto px-4 mt-8 md:pl-[276px] transition-all">
-        
-        {/* Static Header Badge */}
-        <div className="w-full bg-[#C9E8EA] border rounded-[20px] p-6 mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 uppercase">Mathematics & Science</h1>
-            <p className="text-xs text-slate-600 font-bold">Teacher: Static Prof. (Frontend Dev Mode)</p>
+      <div className="container">
+        <div className="main-content">
+          <div className="class_details">
+            <h2>Class Details</h2>
+            <div className="class-info">
+              <div className="class-title">{subject}</div>
+              <i className="fa-solid fa-cloud-arrow-down"></i>
+              <div className="class-detail">Teacher: {teacher}</div>
+            </div>
+          </div>
+          <div className="notices">
+            <h2 style={{ color: 'black' }}>Notices</h2>
+            <Link to="/createnotice" className="add_button ">
+              Add New Notice <IoIosAddCircle style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} />
+            </Link>
+            {renderNotices()}
+          </div>
+          <div className="lesson-container">
+            <h2>Lesson Materials</h2>
+            <Link to="/addmaterial" className="add_button ">
+              Add New Material <IoIosAddCircle style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} />
+            </Link>
+            <div className="search_bar_container">
+              <input type="search" className="search_input" placeholder="Search Materials..." value={searchTerm} onChange={handleSearchChange} />
+            </div>
+            {renderMaterials()}
           </div>
         </div>
-
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {/* Static Notices Column Layout */}
-          <div className="bg-white border-2 border-slate-200 rounded-[22px] p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-black uppercase">Notices</h2>
-              <Link to="/createnotice" className="bg-[#667A8A] text-white text-xs font-bold py-2 px-4 rounded-xl flex items-center gap-2"><IoIosAddCircle /> Add Notice</Link>
-            </div>
-            {Array.from({ length: 6 }, (_, i) => i + 6).map(grade => noticesByGrade[grade] && (
-              <div key={grade} className="mb-4 bg-slate-50 p-4 rounded-xl">
-                <h3 className="text-xs font-black text-[#191970] uppercase mb-2">Grade {grade}</h3>
-                {noticesByGrade[grade].map(n => (
-                  <div key={n._id} className="bg-white border p-3 rounded-lg mb-2">
-                    <h4 className="text-sm font-bold">{n.topic}</h4>
-                    <p className="text-xs text-slate-500 mb-2">{n.description}</p>
-                    <div className="flex gap-2">
-                      <Link to={`/editnotice/${n._id}`} className="bg-[#483EA8] text-white text-[11px] px-2 py-1 rounded">Edit</Link>
-                      <button onClick={() => handleDeleteNotice(n._id)} className="bg-[#8A6675] text-white text-[11px] px-2 py-1 rounded">Delete</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-
-          {/* Static Lesson Materials Column Layout */}
-          <div className="bg-white border-2 border-slate-200 rounded-[22px] p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-black uppercase">Lesson Materials</h2>
-              <Link to="/addmaterial" className="bg-[#667A8A] text-white text-xs font-bold py-2 px-4 rounded-xl flex items-center gap-2"><IoIosAddCircle /> Add Material</Link>
-            </div>
-            <input type="search" placeholder="Search Materials..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-slate-50 border p-2 text-sm rounded-xl mb-4 outline-none" />
-            {Array.from({ length: 6 }, (_, i) => i + 6).map(grade => materialsByGrade[grade] && (
-              <div key={grade} className="mb-4 bg-slate-50 p-4 rounded-xl">
-                <h3 className="text-xs font-black text-[#191970] uppercase mb-2">Grade {grade}</h3>
-                {materialsByGrade[grade].map(m => (
-                  <div key={m._id} className="bg-white border p-3 rounded-lg mb-2">
-                    <h4 className="text-sm font-bold">{m.lesson_topic}</h4>
-                    <p className="text-xs text-slate-500 mb-2">{m.lesson_description}</p>
-                    <div className="flex gap-2 mt-2">
-                      <button onClick={() => alert('Static Simulation: Open File Window Link Mocked')} className="bg-[#3EA87B] text-white text-[11px] px-2 py-1 rounded">View</button>
-                      <Link to={`/editmaterial/${m._id}`} className="bg-[#483EA8] text-white text-[11px] px-2 py-1 rounded">Edit</Link>
-                      <button onClick={() => handleDeleteMaterial(m._id)} className="bg-[#8A6675] text-white text-[11px] px-2 py-1 rounded">Delete</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
     </div>
   );

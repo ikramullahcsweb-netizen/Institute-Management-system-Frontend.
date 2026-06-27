@@ -1,64 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Head from "../Header/Header";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+const BASE_URL = "http://localhost:3000";
+const API_BASE = `${BASE_URL}/api`;
+
 function AttendTeacher() {
   const [classFilter, setClassFilter] = useState("");
   const [studentFilter, setStudentFilter] = useState("");
+  const [attendances, setAttendances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // STATIC DATA MATRIX: Computer Science (CS) Specific Dataset
-  const [attendances] = useState([
-    {
-      _id: "att1",
-      classId: "CS-301 (Data Structures & Algorithms)",
-      studentId: "CS-2026-09",
-      date: "2026-05-18",
-      time: "09:00 AM",
-    },
-    {
-      _id: "att2",
-      classId: "CS-402 (Database Management Systems)",
-      studentId: "CS-2026-14",
-      date: "2026-05-18",
-      time: "11:30 AM",
-    },
-    {
-      _id: "att3",
-      classId: "CS-312 (Operating Systems & Kernels)",
-      studentId: "CS-2026-03",
-      date: "2026-05-19",
-      time: "08:30 AM",
-    },
-    {
-      _id: "att4",
-      classId: "CS-451 (Machine Learning Models)",
-      studentId: "CS-2026-72",
-      date: "2026-05-19",
-      time: "10:00 AM",
-    },
-    {
-      _id: "att5",
-      classId: "CS-301 (Data Structures & Algorithms)",
-      studentId: "CS-2026-45",
-      date: "2026-05-19",
-      time: "09:15 AM",
-    },
-  ]);
+  useEffect(() => {
+    fetchAttendance();
+  }, []);
 
-  const handleClassFilter = (e) => {
-    setClassFilter(e.target.value);
+  const fetchAttendance = () => {
+    setLoading(true);
+    axios
+      .get(`${API_BASE}/attendance/attendancemark`, { withCredentials: true })
+      .then((res) => {
+        setAttendances(res.data.data || []);
+        setError("");
+      })
+      .catch((err) => {
+        console.error("Error fetching attendance:", err);
+        setError("Attendance records load nahi ho sakay. Dobara koshish karein.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
-  const handleStudentFilter = (e) => {
-    setStudentFilter(e.target.value);
-  };
+  const handleClassFilter = (e) => setClassFilter(e.target.value);
+  const handleStudentFilter = (e) => setStudentFilter(e.target.value);
 
-  // Pure frontend filtering logic
   const filteredAttendances = attendances.filter(
     (attendance) =>
-      attendance.classId.toLowerCase().includes(classFilter.toLowerCase()) &&
-      attendance.studentId.toLowerCase().includes(studentFilter.toLowerCase()),
+      (attendance.classId || "").toLowerCase().includes(classFilter.toLowerCase()) &&
+      (attendance.studentId || "").toLowerCase().includes(studentFilter.toLowerCase()),
   );
 
   const generateFilteredPDF = () => {
@@ -66,12 +49,7 @@ function AttendTeacher() {
     doc.text("Filtered CS Department Attendance Report", 10, 10);
     doc.autoTable({
       head: [["Course / Lab ID", "CS Student Roll No", "Date", "Timestamp"]],
-      body: filteredAttendances.map((att) => [
-        att.classId,
-        att.studentId,
-        att.date,
-        att.time,
-      ]),
+      body: filteredAttendances.map((att) => [att.classId, att.studentId, att.date || "-", att.time || "-"]),
       startY: 20,
     });
     doc.save("filtered_cs_attendance.pdf");
@@ -82,12 +60,7 @@ function AttendTeacher() {
     doc.text("All CS Department Attendance Report", 10, 10);
     doc.autoTable({
       head: [["Course / Lab ID", "CS Student Roll No", "Date", "Timestamp"]],
-      body: attendances.map((att) => [
-        att.classId,
-        att.studentId,
-        att.date,
-        att.time,
-      ]),
+      body: attendances.map((att) => [att.classId, att.studentId, att.date || "-", att.time || "-"]),
       startY: 20,
     });
     doc.save("all_cs_attendance.pdf");
@@ -95,30 +68,23 @@ function AttendTeacher() {
 
   return (
     <main className="w-full bg-slate-50 min-h-screen pb-12 font-sans">
-      {/* Structural side layout wrapper template matching sidebar frame layout */}
       <Head />
-
-      {/* WRAPPER FRAME: Shifted 260px right to secure spacing cleanly from the fixed sidebar */}
       <div className="w-full max-w-[1250px] mx-auto px-4 mt-6 md:pl-[260px] transition-all duration-300">
-        {/* Title Area Row */}
         <div className="border-b-2 border-gray-200 pb-4 mb-6">
           <h1 className="text-2xl font-black text-[#13293d] tracking-tight uppercase">
             CS Attendance Terminal
           </h1>
           <p className="text-xs text-gray-500 font-medium">
-            Monitor and track computer science lectures & lab registries locally
+            Monitor and track computer science lectures & lab registries
           </p>
         </div>
 
-        {/* Master Card Frame Panel */}
         <div className="w-full bg-white border-2 border-slate-200 rounded-[20px] shadow-sm overflow-hidden">
-          {/* Card Context Header Area */}
           <div className="bg-slate-50 px-6 py-4 border-b-2 border-slate-200 text-center text-sm font-black text-[#384D6C] uppercase tracking-wider">
             View CS Course Lectures & Lab Attendance Matrix
           </div>
 
           <div className="p-6">
-            {/* Real-time Searching Input Controllers Grid Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <input
                 type="text"
@@ -136,53 +102,52 @@ function AttendTeacher() {
               />
             </div>
 
-            {/* Custom Responsive Table Box Grid Container */}
+            {error && (
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-600 text-xs font-bold flex items-center justify-between">
+                <span>{error}</span>
+                <button onClick={fetchAttendance} className="ml-3 underline font-black">
+                  Retry
+                </button>
+              </div>
+            )}
+
             <div className="overflow-x-auto border border-slate-200 rounded-xl mb-6">
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="bg-slate-50 text-gray-600 uppercase font-bold border-b border-slate-200">
                   <tr>
-                    <th scope="col" className="p-3.5">
-                      Course / Lab Module
-                    </th>
-                    <th scope="col" className="p-3.5">
-                      CS Student Roll No
-                    </th>
-                    <th scope="col" className="p-3.5">
-                      Date Signature
-                    </th>
-                    <th scope="col" className="p-3.5">
-                      Timestamp
-                    </th>
+                    <th scope="col" className="p-3.5">Course / Lab Module</th>
+                    <th scope="col" className="p-3.5">CS Student Roll No</th>
+                    <th scope="col" className="p-3.5">Date Signature</th>
+                    <th scope="col" className="p-3.5">Timestamp</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-gray-700 font-medium">
-                  {filteredAttendances.map((attendance) => (
-                    <tr
-                      key={attendance._id}
-                      className="hover:bg-slate-50/60 transition-colors"
-                    >
-                      <td className="p-3.5 font-bold text-[#13293d]">
-                        {attendance.classId}
-                      </td>
-                      <td className="p-3.5">
-                        <span className="px-2 py-0.5 bg-[#C9E8EA]/60 text-[#384D6C] rounded font-bold">
-                          {attendance.studentId}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-gray-500">{attendance.date}</td>
-                      <td className="p-3.5 text-gray-500">{attendance.time}</td>
-                    </tr>
-                  ))}
-
-                  {/* Empty Filter Fallback View */}
-                  {filteredAttendances.length === 0 && (
+                  {loading && (
                     <tr>
-                      <td
-                        colSpan="4"
-                        className="p-8 text-center text-gray-400 font-bold"
-                      >
-                        No computing logging profiles matched the search
-                        criteria filter.
+                      <td colSpan="4" className="p-8 text-center text-gray-400 font-bold">
+                        Loading attendance records...
+                      </td>
+                    </tr>
+                  )}
+
+                  {!loading &&
+                    filteredAttendances.map((attendance) => (
+                      <tr key={attendance._id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="p-3.5 font-bold text-[#13293d]">{attendance.classId}</td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 bg-[#C9E8EA]/60 text-[#384D6C] rounded font-bold">
+                            {attendance.studentId}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-gray-500">{attendance.date || "-"}</td>
+                        <td className="p-3.5 text-gray-500">{attendance.time || "-"}</td>
+                      </tr>
+                    ))}
+
+                  {!loading && filteredAttendances.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="p-8 text-center text-gray-400 font-bold">
+                        No computing logging profiles matched the search criteria filter.
                       </td>
                     </tr>
                   )}
@@ -190,7 +155,6 @@ function AttendTeacher() {
               </table>
             </div>
 
-            {/* Action Buttons Panel */}
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
               <button
                 type="button"

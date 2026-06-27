@@ -2,200 +2,121 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import Swal from "sweetalert2";
+import axios from "axios";
 import Head from "../Header/Header";
 import logo from "../../../assets/step2 scientist logo.jpeg";
 
 function Mgedit() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const API_URL = "http://localhost:3000";
 
-  // STATIC DATA
-  const paymentData = [
-    {
-      id: "1",
-      itnumber: "IT123456",
-      description: "React Class",
-      date: "2026-05-13",
-      amount: "5000",
-      type: "Online",
-      status: "Pending",
-    },
-    {
-      id: "2",
-      itnumber: "IT654321",
-      description: "Node Course",
-      date: "2026-05-14",
-      amount: "3000",
-      type: "Bank",
-      status: "Approved",
-    },
-  ];
+  const [formData, setFormData] = useState({
+    itnumber: "",
+    description: "",
+    date: "",
+    amount: "",
+    type: "",
+    status: "",
+  });
 
-  const [itnumber, setItnumber] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [amount, setAmount] = useState("");
-  const [type, setType] = useState("");
-  const [status, setStatus] = useState("");
-
-  // LOAD STATIC DATA
+  // Backend se specific payment fetch karna
   useEffect(() => {
-    const payment = paymentData.find((item) => item.id === id);
-
-    if (payment) {
-      setItnumber(payment.itnumber);
-      setDescription(payment.description);
-      setDate(payment.date);
-      setAmount(payment.amount);
-      setType(payment.type);
-      setStatus(payment.status);
-    }
+    const fetchPayment = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/getpayment/${id}`);
+        // Date format fix karne ke liye agar database ISO string bhej raha ho
+        const data = res.data;
+        if (data.date) data.date = data.date.split('T')[0];
+        setFormData(data);
+      } catch (err) {
+        toast.error("Failed to load payment details");
+      }
+    };
+    fetchPayment();
   }, [id]);
 
-  // SAVE
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     Swal.fire({
       title: "Update Payment",
-      text: "Save changes?",
+      text: "Save changes to database?",
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#1DB6D9",
-      cancelButtonColor: "#7ED957",
+      cancelButtonColor: "#d33",
       confirmButtonText: "Save",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        toast.success("Payment Updated");
-
-        setTimeout(() => {
-          navigate("/managerfinancial");
-        }, 1500);
+        try {
+          // Update request
+          await axios.put(`${API_URL}/updatepayment/${id}`, formData);
+          toast.success("Payment Updated Successfully");
+          setTimeout(() => navigate("/managerfinancial"), 1000);
+        } catch (err) {
+          toast.error("Error updating payment");
+        }
       }
     });
   };
 
   return (
-    <div className="min-h-screen bg-white px-4 py-4">
+    <div className="min-h-screen bg-white p-4 md:p-6">
       <Head />
       <Toaster />
 
-      {/* LOGO */}
-      <div className="flex justify-center">
-        <div className="w-[200px] h-[200px] rounded-full border-4 border-[#1DB6D9] flex items-center justify-center">
-          <img src={logo} alt="logo" className="w-36" />
+      {/* Logo & Header */}
+      <div className="flex justify-center mb-6">
+        <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-[#1DB6D9] flex items-center justify-center overflow-hidden">
+          <img src={logo} alt="logo" className="w-24 md:w-32" />
         </div>
       </div>
 
-      {/* TITLE */}
-      <div className="max-w-5xl mx-auto mt-3 bg-[#DDF7F8] border border-black rounded-2xl py-3">
-        <h1 className="text-center text-3xl font-bold text-[#1DB6D9]">
-          Edit Payment
-        </h1>
+      <div className="max-w-3xl mx-auto bg-[#DDF7F8] border border-black rounded-2xl py-3 mb-6">
+        <h1 className="text-center text-2xl md:text-3xl font-bold text-[#1DB6D9]">Edit Payment</h1>
       </div>
 
-      {/* FORM */}
-      <div className="max-w-5xl mx-auto mt-4">
-        <form
-          onSubmit={handleSubmit}
-          className="bg-[#DDF7F8] border border-black rounded-2xl p-5"
-        >
-          {/* IT NUMBER */}
-          <div className="mb-4">
-            <label className="block text-lg font-bold mb-2">IT Number</label>
-
-            <input
-              type="text"
-              value={itnumber}
-              onChange={(e) => setItnumber(e.target.value)}
-              className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
-            />
+      {/* Form Section */}
+      <form onSubmit={handleSubmit} className="max-w-3xl mx-auto bg-[#DDF7F8] border border-black rounded-2xl p-6 md:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputField label="IT Number" name="itnumber" value={formData.itnumber} onChange={handleChange} />
+          <InputField label="Description" name="description" value={formData.description} onChange={handleChange} />
+          <InputField label="Amount" name="amount" value={formData.amount} onChange={handleChange} />
+          <div className="flex flex-col">
+            <label className="font-bold mb-1">Date</label>
+            <input type="date" name="date" value={formData.date} onChange={handleChange} className="border border-black rounded-xl p-3" />
           </div>
+        </div>
 
-          {/* DESCRIPTION */}
-          <div className="mb-4">
-            <label className="block text-lg font-bold mb-2">Description</label>
+        <div className="mt-4">
+          <label className="font-bold mb-1 block">Status</label>
+          <select name="status" value={formData.status} onChange={handleChange} className="w-full border border-black rounded-xl p-3">
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
 
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
-            />
-          </div>
-
-          {/* DATE */}
-          <div className="mb-4">
-            <label className="block text-lg font-bold mb-2">Date</label>
-
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
-            />
-          </div>
-
-          {/* AMOUNT */}
-          <div className="mb-4">
-            <label className="block text-lg font-bold mb-2">Amount</label>
-
-            <input
-              type="text"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
-            />
-          </div>
-
-          {/* TYPE */}
-          <div className="mb-4">
-            <label className="block text-lg font-bold mb-2">Type</label>
-
-            <input
-              type="text"
-              readOnly
-              value={type}
-              className="w-full border border-black rounded-xl p-3 bg-white"
-            />
-          </div>
-
-          {/* STATUS */}
-          <div className="mb-5">
-            <label className="block text-lg font-bold mb-2">Status</label>
-
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-black rounded-xl p-3 outline-none focus:ring-2 focus:ring-[#1DB6D9]"
-            >
-              <option value="Pending">Pending</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-          </div>
-
-          {/* BUTTONS */}
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              className="flex-1 bg-[#384D6C] hover:bg-[#1DB6D9] text-white py-3 rounded-xl font-bold transition-all"
-            >
-              Save
-            </button>
-
-            <button
-              type="button"
-              onClick={() => navigate("/managerfinancial")}
-              className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold transition-all"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="flex gap-4 mt-8">
+          <button type="submit" className="flex-1 bg-[#384D6C] text-white py-3 rounded-xl font-bold hover:bg-[#1DB6D9]">Save</button>
+          <button type="button" onClick={() => navigate("/managerfinancial")} className="flex-1 bg-red-600 text-white py-3 rounded-xl font-bold">Cancel</button>
+        </div>
+      </form>
     </div>
   );
 }
+
+// Reusable Input Component for cleaner code
+const InputField = ({ label, name, value, onChange }) => (
+  <div className="flex flex-col">
+    <label className="font-bold mb-1">{label}</label>
+    <input type="text" name={name} value={value} onChange={onChange} className="border border-black rounded-xl p-3 outline-none" />
+  </div>
+);
 
 export default Mgedit;

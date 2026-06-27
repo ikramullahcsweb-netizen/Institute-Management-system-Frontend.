@@ -1,58 +1,108 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import './Style2.css'
+import { React, useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 function EditMaterials() {
-  const navigate = useNavigate();
-  
-  // Static Placeholder Data
-  const [topic, setTopic] = useState('Sample Lecture Topic');
-  const [date, setDate] = useState('2026-05-19');
-  const [fileType, setFileType] = useState('pdf');
-  const [description, setDescription] = useState('This is a static placeholder description for testing the layout UI.');
 
+  const { id } = useParams();
+
+
+  const [lesson_topic, setLessonTopic] = useState();
+  const [lesson_date, setLessonDate] = useState();
+  const [lesson_fileType, setLessonFileType] = useState();
+  const [lesson_description, setLessonDescription] = useState();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/getmaterial/' + id)
+      .then((res) => {
+
+        setLessonTopic(res.data.lesson_topic);
+        setLessonDate(res.data.lesson_date);
+        setLessonFileType(res.data.lesson_fileType);
+        setLessonDescription(res.data.lesson_description);
+      })
+  }, [id]);
   const update = (e) => {
     e.preventDefault();
-    Swal.fire('Updated!', 'Static material simulation updated.', 'success')
-      .then(() => navigate('/myclasses'));
-  };
+    axios.put('http://localhost:3000/updatematerial/' + id, {
+
+      lesson_topic: lesson_topic,
+      lesson_date: lesson_date,
+      lesson_fileType: lesson_fileType,
+      lesson_description: lesson_description
+    })
+      .then((res) => {
+        console.log('Success');
+        Swal.fire(
+          'Lesson Updated!',
+          'Your Lesson has been successfully updated.',
+          'success'
+        ).then(() => {
+          navigate('/myclasses'); // Redirect to '/myclasses' after displaying the notification
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        Swal.fire(
+          'Error!',
+          'An error occurred while updating the Material.',
+          'error'
+        );
+      });
+  }
+
+
+
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-12 md:pl-[276px] px-4 pt-8">
-      <div className="max-w-[850px] mx-auto bg-white border border-slate-200 rounded-[20px] p-6 sm:p-10 shadow-sm">
-        <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-6">Edit Lesson Material (Static)</h2>
-        <form onSubmit={update} className="space-y-5">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-600 uppercase">Topic</label>
-            <input type="text" required value={topic} onChange={(e) => setTopic(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-600 uppercase">Date</label>
-              <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" />
+    <div class="lessoncontainer">
+      <h2 class="form_topic">Edit Lesson Material</h2>
+      <hr />
+      <br />
+      <div class="input_container">
+
+        <form onSubmit={update} >
+
+          <label for="topic">Topic:</label>
+
+          <input type="text" name="topic" placeholder="Enter topic" value={lesson_topic} onChange={(l) => setLessonTopic(l.target.value)} />
+          <div class="input_group">
+            <div class="input_col">
+              <label for="date">Date:</label>
+
+              <input type="date" name="date" value={lesson_date} onChange={(l) => setLessonDate(l.target.value)} />
+
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-600 uppercase">File Type</label>
-              <select value={fileType} onChange={(e) => setFileType(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none">
-                <option value="pdf">PDF Document</option>
-                <option value="image">Image Asset</option>
-                <option value="pptx">Powerpoint Presentation</option>
-                <option value="Doc">Word Document</option>
+            <div class="input_col">
+              <label for="fileType">File Type:</label>
+
+              <select name="fileType" value={lesson_fileType} onChange={(l) => setLessonFileType(l.target.value)}>
+                <option value="pdf">PDF</option>
+                <option value="image">Image</option>
+                <option value="pptx">PPTX</option>
+                <option value="Doc">Word Doc</option>
               </select>
             </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-600 uppercase">Description</label>
-            <textarea required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none h-32 resize-none" />
-          </div>
-          <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-            <Link to="/myclasses" className="bg-slate-500 hover:bg-slate-600 text-white text-xs font-bold py-3 px-8 rounded-xl uppercase">Cancel</Link>
-            <button type="submit" className="bg-[#483EA8] hover:bg-[#372e87] text-white text-xs font-bold py-3 px-8 rounded-xl uppercase">Save</button>
+          <label for="description">Description:</label>
+
+          <textarea name="description" placeholder="Enter description" value={lesson_description} onChange={(l) => setLessonDescription(l.target.value)} />
+
+          <div class="button-group">
+            <button type='submit'>Save</button>
+            <Link to="/myclasses" class="cancelbutton_EM">Cancel</Link>
           </div>
         </form>
+
       </div>
+
     </div>
-  );
+  )
 }
 
-export default EditMaterials;
+export default EditMaterials

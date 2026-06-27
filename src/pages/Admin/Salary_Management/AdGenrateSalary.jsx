@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Head from '../Header/Header';
+import Head from "../Header/Header";
 
 function AdGenerate() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Current date se start karke automatic current month select karne ke liye (Pure Frontend)
     const currentDate = new Date();
     const formattedDate = currentDate.toISOString().slice(0, 7);
     setSelectedMonth(formattedDate);
@@ -20,7 +19,6 @@ function AdGenerate() {
   const handleGenerate = (event) => {
     event.preventDefault();
     if (selectedMonth) {
-      // Step 2 Scientist Salary Report layout par safe navigation
       navigate(`/adreportsalary?month=${selectedMonth}`);
     }
   };
@@ -28,18 +26,19 @@ function AdGenerate() {
   return (
     <div className="font-sans m-0 p-0">
       <Head />
-      
-      {/* Step 2 Scientist Sidebar-aligned Framework Layout */}
+
       <div className="w-[950px] h-[550px] bg-gradient-to-r from-[#e6eff6] to-[#063a67] ml-[350px] p-2.5 rounded-[20px] border-2 border-black flex items-center justify-center">
         <div className="w-full max-w-[600px] p-8 border border-gray-300 rounded-[20px] bg-[#f9f9f9] shadow-lg">
-          
           <h1 className="text-center text-[#063a67] text-3xl font-bold mb-[30px]">
             Generate Salary Report
           </h1>
-          
+
           <form onSubmit={handleGenerate}>
             <div className="mb-6">
-              <label htmlFor="from" className="block font-bold text-gray-700 mb-2 text-md">
+              <label
+                htmlFor="from"
+                className="block font-bold text-gray-700 mb-2 text-md"
+              >
                 Select Month:
               </label>
               <input
@@ -52,17 +51,16 @@ function AdGenerate() {
                 required
               />
             </div>
-            
+
             <div className="flex justify-center mt-8">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="text-white cursor-pointer bg-[#063a67] text-center rounded-[15px] px-[60px] py-[12px] outline-none transition-all duration-250 text-xl font-bold border-3 border-white hover:bg-gradient-to-r hover:from-[#da4a0c] hover:to-[#e60b45] hover:scale-105 shadow-md"
               >
                 Generate
               </button>
             </div>
           </form>
-
         </div>
       </div>
     </div>

@@ -1,68 +1,73 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 import Head from '../Header/Header';
 
 function ReplyF() {
+  const { id } = useParams();
   const navigator = useNavigate();
   const [reply, setReply] = useState("");
+  const [feedbacks, setFeedbacks] = useState({ sid: "", feedback: "" });
 
-  // Static mock data simulating a student feedback message block
-  const [feedbacks] = useState({
-    sid: "STD-2094",
-    feedback: "The laboratory computer configurations need an update. The current processors are running extremely slow during development builds."
-  });
+  useEffect(() => {
+    // Backend se specific feedback fetch karna
+    axios.get(`http://localhost:3000/giveToReply/${id}`)
+      .then((res) => {
+        setFeedbacks(res.data);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to load feedback details");
+      });
+  }, [id]);
 
-  const replyS = (event) => {
+  const replyS = async (event) => {
     event.preventDefault();
-    console.log('Answer updated locally:', reply);
-    // Navigating back to management dashboard simulation
-    navigator('/managerfeedback');
+    try {
+      // Backend mein reply update karna
+      await axios.put(`http://localhost:3000/getToReply/${id}`, { reply });
+      toast.success('Response Submitted Successfully');
+      setTimeout(() => {
+        navigator('/managerfeedback');
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      toast.error("Error submitting response");
+    }
   };
 
   return (
     <div className="w-full bg-slate-50 min-h-screen pb-12 font-sans">
       <Head />
+      <Toaster />
 
       <div className="w-full max-w-[800px] mx-auto px-4 mt-8">
-        {/* Title Heading Area */}
         <div className="border-b-2 border-gray-200 pb-4 mb-8 text-center sm:text-left">
           <h1 className="text-2xl font-black text-[#13293d] tracking-tight uppercase">
             We Want to Hear from You
           </h1>
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mt-1">
-            Service Feedbacks & Resolution Engine
-          </p>
         </div>
 
-        {/* Dynamic Interactive Card Box */}
         <div className="bg-white border-2 border-slate-200 rounded-[20px] shadow-sm p-6 sm:p-8">
           <form onSubmit={replyS} className="space-y-6">
             
-            {/* Student Identity Block */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">
-                Student ID
-              </label>
+              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">Student ID</label>
               <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-[#13293d]">
                 {feedbacks.sid}
               </div>
             </div>
 
-            {/* Feedback Content Input View */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">
-                Feedback Message
-              </label>
+              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">Feedback Message</label>
               <div className="w-full bg-slate-50 border-2 border-slate-200 rounded-xl px-4 py-4 text-sm text-gray-700 leading-relaxed min-h-[100px]">
                 {feedbacks.feedback}
               </div>
             </div>
 
-            {/* Response Management Input Controller */}
             <div className="flex flex-col gap-2">
-              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">
-                Your Response
-              </label>
+              <label className="text-xs font-black text-gray-600 uppercase tracking-wider">Your Response</label>
               <textarea
                 id="sfr"
                 rows="5"
@@ -74,7 +79,6 @@ function ReplyF() {
               />
             </div>
 
-            {/* Form Actions Operations Panel */}
             <div className="flex justify-end pt-2">
               <button
                 type="submit"
@@ -83,7 +87,6 @@ function ReplyF() {
                 Submit Response
               </button>
             </div>
-
           </form>
         </div>
       </div>

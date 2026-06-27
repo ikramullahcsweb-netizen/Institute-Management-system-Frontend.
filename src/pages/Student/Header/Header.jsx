@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Nav from '../NavBar/Nav';
-import logo from '../photos/logofull.png';
+import logo from '../../../assets/crop logo.jfif';
 import userpng from '../photos/User.png';
 
 function Header() {
@@ -17,7 +17,7 @@ function Header() {
         - Default mobile padding: px-4
         - Desktop sidebar offset padding: md:pl-[290px] (Sidebar adjustment cushion)
       */}
-      <div className="w-full max-w-[1400px] mx-auto px-4 pl-4 md:pl-[290px] py-4 transition-all">
+      <div className="w-full max-w-[1400px] mx-auto px-4 py-4 md:pl-[290px] transition-all">
         
         <div className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 md:p-5 shadow-xs">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -1,48 +1,94 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react'
+import './Style.css'
+import axios from 'axios';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
 import Swal from 'sweetalert2';
 
+
+
 function EditNotice() {
-  const navigate = useNavigate();
-  
-  // Static Dummy Data
-  const [topic, setTopic] = useState('Static Announcement Title');
-  const [date, setDate] = useState('2026-05-19');
-  const [description, setDescription] = useState('Static template notice text for frontend routing verification.');
 
-  const update = (e) => {
-    e.preventDefault();
-    Swal.fire('Updated!', 'Static notice simulation saved.', 'success')
-      .then(() => navigate('/myclasses'));
-  };
+    const { id } = useParams();
+    const [topic, setTopic] = useState();
+    const [date, setDate] = useState();
+    const [description, setDescription] = useState();
+    const navigate = useNavigate();
 
-  return (
-    <div className="w-full bg-slate-50 min-h-screen pb-12 md:pl-[276px] px-4 pt-8">
-      <div className="max-w-[850px] mx-auto bg-white border border-slate-200 rounded-[20px] p-6 sm:p-10 shadow-sm">
-        <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight mb-6">Edit Notice (Static)</h2>
-        <form onSubmit={update} className="space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-600 uppercase">Notice Topic</label>
-              <input type="text" required value={topic} onChange={(e) => setTopic(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" />
+    useEffect(() => {
+        axios.get('http://localhost:3000/getnotice/' + id)
+            .then((res) => {
+                setTopic(res.data.topic);
+                setDate(res.data.date);
+                setDescription(res.data.description);
+            })
+    }, [id]);
+
+
+
+    const update = (e) => {
+        e.preventDefault();
+        axios.put('http://localhost:3000/updatenotice/' + id, {
+            topic: topic,
+            date: date,
+            description: description
+        })
+            .then((res) => {
+                console.log('Success');
+                Swal.fire(
+                    'Notice Updated!',
+                    'Your notice has been successfully updated.',
+                    'success'
+                ).then(() => {
+                    navigate('/myclasses'); 
+                });
+            })
+            .catch((err) => {
+                console.error(err);
+                Swal.fire(
+                    'Error!',
+                    'An error occurred while updating the notice.',
+                    'error'
+                );
+            });
+    }
+
+
+
+    return (
+
+        <div class="Noticecontainer">
+            <h2 class="form_topic">Edit Notice</h2>
+
+            <div class="input_container">
+
+
+                <form onSubmit={update}>
+                    <label for="topic">Notice Topic:</label>
+
+                    <input type="text" name="topic" placeholder="Enter topic" value={topic} onChange={(e) => setTopic(e.target.value)} required />
+                    <div class="input_group">
+                        <div class="input_col">
+                            <label for="date">Date:</label>
+                            <input type="date" name="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+                        </div>
+
+                    </div>
+                    <label for="description">Description:</label>
+                    <input type="text" name="description" placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+
+                    <div class="button-group">
+                        <button type="submit">Edit</button>
+                        <Link to="/myclasses" class="cancelbutton_EN">Cancel</Link>
+                    </div>
+                </form>
+
+
+
             </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-bold text-gray-600 uppercase">Date</label>
-              <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs font-bold text-gray-600 uppercase">Description</label>
-            <textarea required value={description} onChange={(e) => setDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none h-32 resize-none" />
-          </div>
-          <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-            <Link to="/myclasses" className="bg-slate-500 hover:bg-slate-600 text-white text-xs font-bold py-3 px-8 rounded-xl uppercase">Cancel</Link>
-            <button type="submit" className="bg-[#483EA8] hover:bg-[#372e87] text-white text-xs font-bold py-3 px-8 rounded-xl uppercase">Edit</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+
+        </div>
+    )
 }
 
-export default EditNotice;
+export default EditNotice

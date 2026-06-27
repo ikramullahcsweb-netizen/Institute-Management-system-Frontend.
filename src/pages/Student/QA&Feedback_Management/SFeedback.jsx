@@ -1,209 +1,165 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import './SFeedback.css';
+import axios from 'axios';
+import {useNavigate} from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
-import { FaCogs, FaUserGraduate, FaCalendarAlt, FaPaperPlane } from 'react-icons/fa';
+
 
 function SFeedback() {
-  // Static Local Data Hook Managers
-  const [sid, setSid] = useState('STU-99210');
-  const [grade, setGrade] = useState('Grade 10');
-  const [sfeedback, setSFeedback] = useState('');
+
+  const[sid,setSid]=useState();
+  const [grade, setGrade] = useState();
+  const [sfeedback, setSFeedback] = useState();
   const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
   const navigator = useNavigate();
 
-  // Sandbox Profile Loading Simulation on Mount
-  useEffect(() => {
-    // React hook logic maintains state value inputs safely
-    setSid('STU-2026-MERN');
-    setGrade('Grade 10 (Advanced)');
-  }, []);
+  const submit = (a) =>{
+    a.preventDefault();
+    axios.post('http://localhost:5000/createSF', {grade:grade,sid:sid,feedback:sfeedback,date:date})
+    .then(res =>{
+      console.log(res);
+      console.log( `Feedback Submitted successfully.`);
+     
+    })
+    .catch(err => console.error(err));
 
-  // Sandbox Post Submission Logger Action Pipeline
-  const submitFakeRequest = () => {
-    console.log("Mock Submission Payload attached successfully:", {
-      sid,
-      grade,
-      feedback: sfeedback,
-      date
+  }
+
+  const handleSubmit = (a) => {
+    a.preventDefault();
+    Swal.fire({
+      title: "Submit Feedback",
+      text: "Are you sure you want to proceed ?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, proceed!",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        submit(a); // Call submit function if result is confirmed
+        Swal.fire({
+          title: "Feedback Submitted",
+          icon: "success",
+        });
+        handleClick2();
+      } else {
+        Swal.fire({
+          title: "Failed",
+          icon: "error",
+        });
+        // Call submit function even if result is canceled
+      }
     });
   };
+  
+  
 
-  const handleToastAlertSequence = () => {
-    toast.loading('Processing submission pipeline...', {
-      id: 'submitting_loader',
+  const handleClick2 = () => {
+    toast.loading('Processing...', {
       style: {
-        background: '#0F172A',
-        color: '#ffffff',
-        borderRadius: '12px',
-        border: '2px solid #334155',
-        fontSize: '13px',
-        fontWeight: 'bold',
+        background: 'black', // Customize the background color
+        color: '#ffffff', // Customize the text color
+        borderRadius: '10px', // Add border radius
+        border: '2px solid #ffffff', // Add border
       },
     });
   
     setTimeout(() => {
-      toast.dismiss('submitting_loader');
-      
-      toast.success('Service Feedback Logged!', {
-        style: {
-          background: '#136845',
-          color: '#ffffff',
-          borderRadius: '12px',
-          border: '2px solid #1e3a1e',
-          fontSize: '13px',
-          fontWeight: 'bold',
-        },
-        duration: 2000,
-      });
-
+      toast.dismiss();
       setTimeout(() => {
-        navigator('/Feedback');
-      }, 2200);
-    }, 2000);
+        toast.success('Completed!', {
+          style: {
+            background: '#28a745', // Green background color
+            color: '#ffffff', // White text color
+            borderRadius: '10px', // Rounded corners
+            border: '2px solid #ffffff', // White border
+          },
+          duration: 2000, // Display duration in milliseconds (3 seconds)
+          iconTheme: {
+            primary: '#ffffff', // White icon color
+            secondary: '#28a745', // Green icon color
+          },
+        });
+        setTimeout(() => {
+          navigator('/Feedback');
+        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
+      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
+    }, 5000); // Wait for 5 seconds before dismissing loading toast
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  useEffect(() => {
+    axios.get('/studentprofile')
+      .then((res) => {
+        setSid(res.data.stdid);
+        setGrade(res.data.grade);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }, []);
 
-    Swal.fire({
-      title: "Submit Service Entry?",
-      text: "Are you sure you want to log this parameter record?",
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonColor: "#384D6C",
-      cancelButtonColor: "#4a2032",
-      confirmButtonText: "Yes, submit log",
-      cancelButtonText: "Cancel",
-      background: '#FFFFFF',
-      customClass: {
-        title: 'text-sm font-black uppercase text-slate-800 tracking-tight',
-        popup: 'rounded-2xl border-2 border-slate-900',
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        submitFakeRequest();
-        Swal.fire({
-          title: "Feedback Saved",
-          text: "Sandbox state mutation sequence processed.",
-          icon: "success",
-          confirmButtonColor: "#384D6C"
-        });
-        handleToastAlertSequence();
-      } else {
-        Swal.fire({
-          title: "Cancelled",
-          text: "Log state generation suspended.",
-          icon: "error",
-          confirmButtonColor: "#384D6C"
-        });
-      }
-    });
-  };
+  /*const[questions,setQuestions] = useState([]);
+  useEffect(() => {
+    axios.get('http://localhost:5000/MyQuestions')
+    .then((res) =>{
+      setQuestions(res.data);
+    })
+    .catch((err) => console.error(err));
+  },[]);*/
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-20 font-sans antialiased">
-      {/* Dynamic Native System Alerts Wrapper */}
-      <Toaster position="top-right" reverseOrder={false} />
-      
-      {/* Universal Portal Navbar Header */}
-      <Head />
-
-      {/* Main Structural Wrapper Container - Handled layout spacing offset via padding */}
-      <div className="w-full max-w-[1100px] mx-auto px-4 lg:pl-[290px] mt-8 space-y-6">
+    <>
+    <Head/>
+    <h1 className="heading9">We Want to Hear from You - Service Feedback</h1>
+    <div className='uth2' >
         
-        {/* Module Main Heading Block */}
-        <div className="border-b-2 border-slate-200 pb-3">
-          <h2 className="text-xl md:text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-2.5">
-            <FaCogs className="text-[#384D6C]" /> We Want to Hear from You - Service Feedback
-          </h2>
-          <div className="h-1 w-16 bg-[#384D6C] rounded-full mt-1.5" />
-        </div>
+      <Toaster/>
+    
+    <form onSubmit={handleSubmit}>
 
-        {/* Input Form Frame Deck */}
-        <form 
-          onSubmit={handleSubmit}
-          className="bg-white border-2 border-slate-900 rounded-2xl p-6 md:p-8 shadow-sm max-w-3xl space-y-5"
-        >
-          {/* Row Layout: Student ID & Grade Grid View */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
-            {/* Input Segment: Student ID Tracker Box */}
-            <div className="space-y-1.5">
-              <label htmlFor="sid_view" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaUserGraduate className="text-slate-400" /> Student Profile Token
-              </label>
-              <input
-                id="sid_view" 
-                type="text" 
-                value={sid} 
-                readOnly
-                className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none select-none"
-              />
-            </div>
+    <label htmlFor="sid1" className="tv18">Student ID</label>
+    <input
+        id="sid1" style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '431px',top: '262px',background: '#FFFFFF',border: '1px solid #000000'}} 
+        type="text" value={sid} readOnly/>
 
-            {/* Input Segment: Current Academic Grade Box */}
-            <div className="space-y-1.5">
-              <label htmlFor="grade_view" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                <FaUserGraduate className="text-slate-400" /> Allocated Grade Tier
-              </label>
-              <input
-                id="grade_view" 
-                type="text" 
-                value={grade} 
-                readOnly
-                className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none select-none"
-              />
-            </div>
+      <label htmlFor="grade" className="tt61">Grade</label>
+      <input
+        id="sid1" style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '431px',top: '406px',background: '#FFFFFF',border: '1px solid #000000'}} 
+        type="text" value={grade} readOnly/>
+      
 
-          </div>
+      <label htmlFor="feedback" className="tt71">Feedback</label>
+      <textarea
+        id="feedback"
+        style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '178px',left: '431px',top: '561px',background: '#FFFFFF',border: '1px solid #000000'}}
+        onChange={(a)=> setSFeedback(a.target.value)}
+        required
+      ></textarea>
 
-          {/* Input Segment: Textarea Feedback Module Box */}
-          <div className="space-y-1.5">
-            <label htmlFor="feedback_entry" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-              <FaCogs className="text-slate-400" /> Elaborate System / Utility Feedback
-            </label>
-            <textarea
-              id="feedback_entry"
-              rows="5"
-              placeholder="Describe platform experience, system responses, lab issues, or administration utilities bugs..."
-              value={sfeedback}
-              onChange={(e) => setSFeedback(e.target.value)}
-              required
-              className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl p-4 focus:outline-none transition-colors shadow-inner resize-none min-h-[120px]"
-            ></textarea>
-          </div>
-
-          {/* Input Segment: Current Date Timestamp Box */}
-          <div className="space-y-1.5">
-            <label htmlFor="date_view" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-              <FaCalendarAlt className="text-slate-400" /> Entry Submission Date
-            </label>
-            <input
-              id="date_view"
-              type="date"
-              value={date}
-              readOnly
-              className="w-full bg-slate-100 border-2 border-slate-200 text-slate-500 font-bold text-xs rounded-xl px-4 py-3 cursor-not-allowed focus:outline-none select-none w-full sm:w-1/2"
-            />
-          </div>
-
-          {/* Bottom Action Submit Deck Button Row */}
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
-            <button
-              type="submit"
-              className="w-full sm:w-auto bg-[#384D6C] hover:bg-[#2b3b54] text-white font-black text-xs uppercase tracking-widest py-3.5 px-8 rounded-xl border-2 border-slate-950 shadow-xs flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] border-b-4 active:border-b-2"
-            >
-              <FaPaperPlane className="text-[11px]" /> Dispatch Feedback Log
-            </button>
-          </div>
-
-        </form>
-
-      </div>
-    </div>
-  );
+      <label htmlFor="date" className="tt81">Date</label>
+      <input
+        id="date"
+        style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '436px',top: '815px',background: '#FFFFFF',border: '1px solid #000000'}}
+        type="date"
+        value={date}
+        readOnly
+        onChange={(a)=> this.setState({ currentDate: a.target.value })}
+      />
+      <button
+        id="sfeed"
+        className="buttonbb6"
+       
+      >
+        Submit
+      </button>
+    </form>
+  </div>  
+  </>
+  )
 }
 
-export default SFeedback;
+export default SFeedback
