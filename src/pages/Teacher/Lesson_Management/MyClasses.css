@@ -5,7 +5,7 @@ body {
 }
 
 .t_container {
-
+    margin-left: 200px;
     width: 100%;
     max-width: 1200px;
     margin-left: 50px;

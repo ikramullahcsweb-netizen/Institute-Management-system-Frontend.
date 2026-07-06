@@ -73,7 +73,7 @@ function AddAdditionalClasses() {
   };
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-12 font-sans">
+    <div className="w-full bg-slate-50 min-h-screen pb-10 font-sans">
       <Head />
       <div className="w-full max-w-[1250px] mx-auto px-4 mt-6 md:pl-[260px]">
         <div className="border-b-2 border-gray-200 pb-4 mb-8">

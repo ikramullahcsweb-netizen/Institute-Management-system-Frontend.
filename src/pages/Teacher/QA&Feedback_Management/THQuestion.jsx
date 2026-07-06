@@ -11,7 +11,7 @@ function THQuestion() {
 
   useEffect(() => {
     // Fetch questions from backend
-    axios.get('http://localhost:5000/questionsShow')
+    axios.get('http://localhost:3000/api/v1questionsShow')
       .then((response) => {
         setQuestions(response.data);
       })
@@ -41,7 +41,7 @@ function THQuestion() {
 
 
   const handleDeleteA = (id) => {
-    axios.put(`http://localhost:5000/deleteAnswer/${id}`)
+    axios.put(`http://localhost:3000/api/v1deleteAnswer/${id}`)
       .then(res => {
         window.location.reload();
         // Optionally, you can handle success or show a message here

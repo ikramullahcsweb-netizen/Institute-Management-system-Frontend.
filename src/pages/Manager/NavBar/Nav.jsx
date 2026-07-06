@@ -254,8 +254,8 @@ function Nav() {
       >
         {/* TOP BRANDING ROW */}
         <div>
-          <h1 className="text-3xl font-bold text-center text-[#384D6C] mb-3 mt-10 md:mt-0">
-            LMS
+          <h1 className="text-xl font-bold text-center text-[#384D6C] mb-3 mt-10 md:mt-0 text-start ">
+            LMS (MANAGER )
           </h1>
 
           {/* NAVIGATION LINKS CONTAINER */}

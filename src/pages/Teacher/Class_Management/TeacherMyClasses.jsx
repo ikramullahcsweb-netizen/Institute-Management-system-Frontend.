@@ -54,9 +54,9 @@ function TeacherMyClasses() {
   );
 
   return (
-    <div className="w-full bg-slate-50 min-h-screen pb-12 font-sans">
+    <div className="w-full bg-slate-50 min-h-screen pb-10 font-sans flex flex-col">
       <Head />
-      <div className="w-full max-w-[1350px] mx-auto px-4 mt-6 md:pl-[260px] transition-all duration-300">
+      <div className=" max-w-[1350px] mx-auto px-4  md:pl-[260px] transition-all duration-300 pt-5 ">
         <div className="border-b-2 border-gray-200 pb-4 mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-black text-[#13293d] tracking-tight uppercase">My Lecture Matrix</h1>

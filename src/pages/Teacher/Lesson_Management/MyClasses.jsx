@@ -251,7 +251,7 @@ function MyClasses() {
   return (
     <div>
       <Head />
-      <div className="container">
+      <div className="container md:pl-[200px]">
         <div className="main-content">
           <div className="class_details">
             <h2>Class Details</h2>

@@ -1,85 +1,123 @@
-import React, { useState } from 'react'
-import './Login.css';
-import loginimg from './photos/teacherlogin.png'
-import logofull from './photos/logofull.png'
-import axios from "axios";
-import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
+import { useNavigate, Link } from 'react-router-dom';
+import loginimg from './photos/teacherlogin.png';
+import logofull from './photos/logofull.png';
 
-function Forgetpasswordteacher() {
-  const [username, setusername] = useState("");
-  const [SecAnswer, setSecAnswer] = useState("");
-  const [newPassword, setnewPassword] = useState("");
-  const [rePassword, setrePassword] = useState("");
-
+function TeacherLogin() {
   const navigate = useNavigate();
+  const [data, setData] = useState({
+    username: '',
+    password: ''
+  });
 
-  const handleSubmit = async (e) => {
+  const loginTeacher = (e) => {
     e.preventDefault();
-    if (newPassword !== rePassword) {
-      toast.error("Passwords do not match");
+    const { username, password } = data;
+
+    if (!username || !password) {
+      toast.error("Please fill in all fields");
       return;
-    } else {
-      try {
-        const res = await axios.post("/teacherforgetpassword", {
-          username,
-          newPassword,
-          SecAnswer,
-        });
-        if (res && res.data.success) {
-          toast.success(res.data && res.data.message);
-  
-          navigate("/teacherlogin");
-        } else {
-          toast.error(res.data.message);
-        }
-      } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong");
-      }
     }
+
+    toast.success("Logged in successfully!");
+    navigate('/teacherprofile');
   };
 
   return (
-    <main>
-      <div class="mainlogin">
-        <div class="loginphoto">
-          <img src={loginimg} alt='loginimage' class='loginimg' />
-        </div>
-        <div class="login">
-          <img src={logofull} alt='loginimage' />
-          <p class="troub1">TROUBLE LOGIN?</p>
-          <p class="troub2">Please enter your username and answer the security question in the fields below to continue</p>
-
+    <main className="w-full h-screen flex font-sans overflow-hidden bg-slate-50">
+      
+      {/* LEFT PANEL: Sticky Image with Text Overlay */}
+      <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
+        <img 
+          src={loginimg} 
+          alt='Teacher Login' 
+          className="w-full h-full object-cover" 
+        />
         
-          <form onSubmit={handleSubmit}>
-            <div class="username">
-              <label for="username" class="logintxt">USERNAME</label><br/>
-              <input type="text" id="username" name="username" placeholder="Enter your username" class="loginbox" value={username} onChange={(e) => setusername(e.target.value)}/>                        
-            </div>  
-            <div class="username">
-                <label for="securityans" class="logintxt">SECURITY QUESTION - What city were you born in?</label><br/>
-                <input type="text" id="securityans" name="securityans" placeholder="Enter your answer" class="loginbox" value={SecAnswer} onChange={(e) => setSecAnswer(e.target.value)}/>
-            </div>
-            <div class="username">
-                <label for="password" class="logintxt">NEW PASSWORD</label><br/>
-                <input type="password" id="password" name="password" placeholder="Enter your new password" class="loginbox" value={newPassword} onChange={(e) => setnewPassword(e.target.value)}/>
-            </div>
-            <div class="username">
-            <label for="repassword" class="logintxt">RE-ENTER PASSWORD</label><br/>
-              <input type="password" id="repassword" name="repassword" placeholder="Enter your password again" class="loginbox" value={rePassword} onChange={(e) => setrePassword(e.target.value)}/>
-            </div>
-            <br/>
-            <button class="reset" className='btnloging' type="submit">RESET YOUR PASSWORD</button>
-            <a href='/teacherlogin'><p class="register">Already have an Account? <b>Log IN</b></p></a>
-          </form>
+        <div className="absolute inset-0 bg-black/30 z-10" />
 
-
+        <div className="absolute bottom-12 left-12 z-20 text-white">
+          <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">
+            Academic Operations Center
+          </p>
+          <h2 className="text-3xl font-black uppercase leading-tight max-w-[400px]">
+            Royal Academy Teacher Portal
+          </h2>
         </div>
       </div>
-      
+
+      {/* RIGHT PANEL: Scrollable Form Section */}
+      <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
+        
+        <form 
+          onSubmit={loginTeacher} 
+          className="w-full max-w-[400px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
+        >
+          {/* Header */}
+          <div className="flex flex-col items-center text-center mb-8">
+            <img src={logofull} alt="Logo" className="h-16 w-auto object-contain mb-6" />
+            <h1 className="text-xl font-bold text-slate-800">Welcome Back</h1>
+            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
+              Sign in to access your dashboard
+            </p>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-5 w-full">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
+              <input 
+                type="text" 
+                placeholder="Enter your username" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
+                value={data.username} 
+                onChange={(e) => setData({...data, username: e.target.value})}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
+              <input 
+                type="password" 
+                placeholder="Enter your password" 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
+                value={data.password} 
+                onChange={(e) => setData({...data, password: e.target.value})}
+                required
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <Link 
+                to='/teacherforgetpassword' 
+                className="text-[10px] text-slate-500 hover:text-[#10a1b6] font-bold uppercase tracking-widest underline"
+              >
+                Forgot Password?
+              </Link>
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2"
+            >
+              Login
+            </button>
+
+            <div className="text-center pt-2">
+              <Link 
+                to='/adminmanagerlogin' 
+                className="text-[10px] text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest transition-all"
+              >
+                Manager/Admin Login
+              </Link>
+            </div>
+          </div>
+        </form>
+      </div>
     </main>
-  )
+  );
 }
 
-export default Forgetpasswordteacher
+export default TeacherLogin;

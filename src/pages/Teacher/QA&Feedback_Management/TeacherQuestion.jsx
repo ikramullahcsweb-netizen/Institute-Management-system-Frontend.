@@ -10,7 +10,7 @@ function TeacherQuestion() {
     const[questions,setQuestions] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/getTQuestions')
+        axios.get('http://localhost:3000/api/v1/getTQuestions')
         .then((res) => {
             setQuestions(res.data);
         })

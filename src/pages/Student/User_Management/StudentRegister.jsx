@@ -1,34 +1,24 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import loginimg from './photos/studentlogin.png';
-import logofull from './photos/logofull.png';
+import logofull from '../../../assets/step2 scientist logo.jpeg';
 import { FaUser, FaEnvelope, FaPhone, FaGraduationCap, FaIdCard, FaLock } from 'react-icons/fa';
 
 function StudentRegister() {
   const navigate = useNavigate();
 
-  // Pure Static Identity Vector Generation Tools
-  function getCurrentYear() {
-    return new Date().getFullYear().toString().slice(-2);
-  }
-
-  function generateRandomNumber() {
-    return Math.floor(1000 + Math.random() * 9000);
-  }
-
+  // Generators for ID
   function generateStudentId() {
-    const year = getCurrentYear();
-    const randomNumber = generateRandomNumber();
-    return `SID${year}${randomNumber}`;
+    const year = new Date().getFullYear().toString().slice(-2);
+    return `SID${year}${Math.floor(1000 + Math.random() * 9000)}`;
   }
 
-  function generateWalletId() {   
-    const randomNumber = generateRandomNumber();
-    return `WID${randomNumber}`;
+  function generateWalletId() { 
+    return `WID${Math.floor(1000 + Math.random() * 9000)}`;
   }
 
-  // Unified Functional Component Forms Memory Hook
   const [data, setData] = useState({
     name: '',
     email: '',
@@ -41,11 +31,11 @@ function StudentRegister() {
     walletid: generateWalletId()
   });
 
-  // Sandboxed Registration Simulation Interceptor
-  const registerStudent = (e) => {
+  // API Submission Handler
+  const registerStudent = async (e) => {
     e.preventDefault();
     
-    // Validate empty input fields
+    // Validation
     if (!data.name || !data.email || !data.username || !data.password) {
       toast.error('Please fill out all mandatory identity fields.');
       return;
@@ -56,29 +46,28 @@ function StudentRegister() {
       return;
     }
 
-    toast.success("Registration Cached Successfully (Sandbox State)!");
-    
-    // Reset framework memory stream array
-    setData({
-      name: '',
-      email: '',
-      contactnumber: '',
-      grade: '',
-      username: '',
-      stdid: generateStudentId(),
-      password: '',
-      repassword: '',
-      walletid: generateWalletId()
-    });
-    
-    navigate('/login');
+    try {
+      // API Call
+      const response = await axios.post('http://localhost:3000/api/v1/studentregister', data);
+      
+      // Success Response
+      toast.success(response.data.message || "Registration Successful!");
+      
+      // Navigate to login
+      navigate('/login');
+      
+    } catch (error) {
+      // Error Handling
+      const errorMessage = error.response?.data?.message || "Something went wrong! Please try again.";
+      toast.error(errorMessage);
+    }
   };
 
   return (
     <main className="w-full min-h-screen bg-slate-50 flex items-stretch font-sans antialiased">
       
-      {/* Visual Creative Panel Slot - Hidden on smaller breakpoints */}
-      <div className="hidden lg:block lg:w-[45%] xl:w-[50%] bg-slate-900 relative overflow-hidden">
+      {/* Visual Creative Panel Slot - Sticky and Fixed */}
+      <div className="hidden lg:block lg:w-[45%] xl:w-[50%] bg-slate-900 relative h-screen sticky top-0">
         <img 
           src={loginimg} 
           alt="Royal Academy Architecture Banner" 
@@ -100,14 +89,14 @@ function StudentRegister() {
         </div>
       </div>
 
-      {/* Input Action Form Presentation Deck Container */}
-      <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center px-4 py-12 md:p-16 overflow-y-auto">
+      {/* Input Action Form Presentation Deck Container - Scrollable */}
+      <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center px-4 py-12 md:p-16 overflow-y-auto max-h-screen bg-white">
         <div className="w-full max-w-[480px] space-y-8">
           
           {/* Header Panel Branding Nodes */}
-          <div className="text-center space-y-3 flex flex-col items-center">
+          <div className="text-center space-y-3 flex flex-col items-center mt-30 md:mt-38">
             <div className="max-w-[200px] hover:scale-105 transition-transform duration-300">
-              <img src={logofull} alt="Royal Academy Main Shield Seal" className="w-full h-auto object-contain" />
+              <img src={logofull} alt="Royal Academy Main Shield Seal" className="w-40 h-30 object-contain" />
             </div>
             <div className="space-y-1">
               <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
@@ -122,136 +111,109 @@ function StudentRegister() {
           {/* Core Master Registry Node Handle */}
           <form onSubmit={registerStudent} className="space-y-4">
             
-            {/* Input Element Field Component Grid Array Blocks */}
             <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 md:p-6 space-y-4 shadow-sm">
               
-              {/* Field: Full Name */}
               <div className="space-y-1">
-                <label htmlFor="name" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                   <FaUser className="text-slate-400 text-xs" /> Full Name
                 </label>
                 <input 
                   type="text" 
-                  id="name" 
-                  placeholder="Enter your full name" 
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400 placeholder:font-medium" 
+                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                   value={data.name} 
                   onChange={(e) => setData({...data, name: e.target.value})}
                 />
               </div>
 
-              {/* Field Group Array: Email and Mobile Connectors */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label htmlFor="email" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaEnvelope className="text-slate-400 text-xs" /> Email
                   </label>
                   <input 
                     type="email" 
-                    id="email" 
-                    placeholder="name@academy.edu" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400 placeholder:font-medium" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                     value={data.email} 
                     onChange={(e) => setData({...data, email: e.target.value})}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="contactnumber" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaPhone className="text-slate-400 text-xs" /> Contact Number
                   </label>
                   <input 
                     type="text" 
-                    id="contactnumber" 
-                    placeholder="03001234567" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400 placeholder:font-medium" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                     value={data.contactnumber} 
                     onChange={(e) => setData({...data, contactnumber: e.target.value})} 
                   />
                 </div>
               </div>
 
-              {/* Field: Academic Grade Level Segment Custom Options */}
               <div className="space-y-1">
-                <label htmlFor="grade" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                   <FaGraduationCap className="text-slate-400 text-sm" /> Academic Grade Level
                 </label>
-                <div className="relative">
-                  <select 
-                    id="grade" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs appearance-none cursor-pointer" 
-                    value={data.grade} 
-                    onChange={(e) => setData({...data, grade: e.target.value})}
-                  >
-                    <option value="" className="font-medium text-slate-400">Select Enrolled Grade</option>
-                    <option value="6"> (Middle Block)</option>
-                    <option value="7">Grade 7 (Middle Block)</option>
-                    <option value="8">Grade 8 (Middle Block)</option>
-                    <option value="9">Grade 9 (Senior Metric)</option>
-                    <option value="10">Grade 10 (Senior Metric)</option>
-                    <option value="11">Grade 11 (Higher Secondary)</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
-                  </div>
-                </div>
+                <select 
+                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs appearance-none cursor-pointer" 
+                  value={data.grade} 
+                  onChange={(e) => setData({...data, grade: e.target.value})}
+                >
+                  <option value="">Select Enrolled Grade</option>
+                  <option value="6">database</option>
+                  <option value="7">web development 7</option>
+                  <option value="8">data science</option>
+                  <option value="9">meachine learning</option>
+                </select>
               </div>
 
-              {/* Field Group Array: Account Handle and Generated Token Node */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-200">
                 <div className="space-y-1">
-                  <label htmlFor="username" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaUser className="text-slate-400 text-xs" /> Account Username
                   </label>
                   <input 
                     type="text" 
-                    id="username" 
-                    placeholder="e.g. ikram_dev" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400 placeholder:font-medium" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                     value={data.username} 
                     onChange={(e) => setData({...data, username: e.target.value})}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="stdid" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaIdCard className="text-slate-400 text-xs" /> System Auto-ID
                   </label>
                   <input 
                     type="text" 
-                    id="stdid" 
                     className="w-full bg-slate-100 border-2 border-slate-200 text-[#0C7FDA] font-mono font-black text-xs rounded-xl px-4 py-3 focus:outline-none cursor-not-allowed select-none shadow-inner" 
                     value={data.stdid} 
                     readOnly 
                   />
                 </div>
               </div>
-
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-200">
                 <div className="space-y-1">
-                  <label htmlFor="password" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaLock className="text-slate-400 text-xs" /> Password
                   </label>
                   <input 
                     type="password" 
-                    id="password" 
-                    placeholder="••••••••" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                     value={data.password} 
                     onChange={(e) => setData({...data, password: e.target.value})}
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label htmlFor="repassword" className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
+                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
                     <FaLock className="text-slate-400 text-xs" /> Re-Enter Security
                   </label>
                   <input 
                     type="password" 
-                    id="repassword" 
-                    placeholder="••••••••" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs placeholder:text-slate-400" 
+                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
                     value={data.repassword} 
                     onChange={(e) => setData({...data, repassword: e.target.value})}
                   />
@@ -260,7 +222,6 @@ function StudentRegister() {
 
             </div>
 
-            {/* Form Master Submit Processing Actions Handles */}
             <div className="space-y-4 pt-2">
               <button 
                 type="submit" 
@@ -268,21 +229,21 @@ function StudentRegister() {
               >
                 Sign Up Enrolment Node
               </button>
-              
-              <div className="text-center">
-                <a href="/login" className="inline-block group text-slate-600 hover:text-slate-900 transition-colors">
-                  <p className="text-xs font-bold uppercase tracking-wide">
-                    Already have an Account? <span className="text-[#0C7FDA] underline group-hover:text-[#0b6cbd] font-black">Log IN</span>
-                  </p>
-                </a>
-              </div>
             </div>
+            <div className="flex gap-2 justify-center text-center text-sm text-gray-600 mt-1">
+            <p>Already have an account?</p>
+            <button
+              type="button"
+              className="text-[#1688B5] hover:underline cursor-pointer"
+              onClick={() => navigate("/studentlogin")}
+            >
+              Sign in
+            </button>
+          </div>
 
           </form>
-
         </div>
       </div>
-
     </main>
   );
 }

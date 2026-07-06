@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import loginimg from "./photos/managerlogin.png";
-import logofull from "./photos/logofull.png";
+import logo from '../../../../src/assets/crop logo.jfif';
+import logofull from "../../../assets/step2 scientist logo.jpeg";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -50,6 +51,7 @@ function Forgetpasswordmanager() {
           alt="Authentication Visual"
           className="w-full h-full object-cover object-center absolute inset-0"
         />
+       
         <div className="absolute bottom-12 left-12 right-12 z-20 text-white">
           <p className="text-xs font-black tracking-widest uppercase text-[#10a1b6] mb-2">Internal Management Gateway</p>
           <h2 className="text-3xl font-black uppercase tracking-tight">Secured Node Portal Entry</h2>
@@ -60,11 +62,13 @@ function Forgetpasswordmanager() {
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 md:px-16 py-12 bg-slate-50">
         <div className="w-full max-w-[460px] bg-white border-2 border-slate-200 rounded-[32px] p-8 md:p-10 shadow-sm">
           <div className="flex flex-col items-center text-center mb-8">
-            <img src={logofull} alt="Logo" className="h-12 w-auto mb-6 object-contain" />
+            <div className="flex">
+            <img src={logofull} alt="Logo" className="h-20 w-auto mb-6 object-contain" />
+            <img src={logo} alt="Logo" className="h-17 w-auto mb-6 object-contain" /> </div>
             <h1 className="text-xl font-black text-[#13293d] tracking-tight uppercase mb-2">Trouble Logging In?</h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit}  style={{ margin: 0 }} className="space-y-4">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider pl-1">Account Username</label>
               <input

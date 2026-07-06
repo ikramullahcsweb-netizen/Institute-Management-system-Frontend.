@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import Nav from "../NavBar/Nav";
 import userpng from "../photos/User.png";
 import logo from "../../../assets/step2 scientist logo.jpeg";
@@ -15,59 +16,34 @@ function Header() {
   }, []);
 
   return (
-    <div className="font-sans w-full">
-      <Nav />
+    <div className="bg-slate-50 flex font-sans">
+      {/* <aside className="hidden lg:block w-[210px] fixed left-0 top-0 h-screen z-40"> */}
+        <Nav />
+      {/* </aside> */}
 
-      <div className="w-[93%] r-1 pl-65 mx-auto px-1 mt-4">
-        <div className="bg-white p- md:p-6 rounded-[20px] border-2 border-[#10a1b6] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 max-h-16">
-          <div className="flex-shrink-0">
-            <img
-              src={logo}
-              alt="Step 2 Scientist"
-              className="h-[50px] w-auto object-contain"
-            />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-end gap-1">
-            
-              <div className="flex flex-col items-start">
-                <span className="text-sm font-black text-gray-400 tracking-tight uppercase leading-none mb-1">
-                  STEP
-                </span>
-                <div className="flex items-end gap-[2px] h-[10px] mb-[2px]">
-                  <div className="w-[4px] h-[30%] bg-[#70c043] rounded-xs"></div>
-                  <div className="w-[4px] h-[55%] bg-[#3fb47b] rounded-xs"></div>
-                  <div className="w-[4px] h-[80%] bg-[#10a1b6] rounded-xs"></div>
-                  <div className="w-[4px] h-[100%] bg-[#1b5592] rounded-xs"></div>
-                </div>
+      <div className="flex-1 md:ml-[190px] ">
+        <main className="w-full px-3 sm:px-4 lg:px-6 py-4">
+          <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 md:gap-5">
+              <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-gray-100 flex-shrink-0">
+                <img src={logo} alt="Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="text-3xl font-black text-[#10a1b6] italic leading-none mx-0.5">
-                2
-              </span>
-              
-              <span className="text-xl font-black tracking-tight text-[#13293d] uppercase leading-none relative">
-                SCI<span className="text-[#10a1b6]">EN</span>TIST
-              </span>
+
+              <div>
+                <h2 className="text-xl font-black text-slate-800 m-0">
+                  Hello, {name}
+                </h2>
+                <p className="text-xs text-cyan-600 font-bold uppercase tracking-widest mt-0.5 m-0">
+                  Teacher
+                </p>
+              </div>
+            </div>
+
+            <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-cyan-500 flex-shrink-0">
+              <img src={userpng} alt="User" className="w-full h-full object-cover" />
             </div>
           </div>
-
-          <div className="lg:flex hidden text-center sm:text-left flex-grow sm:px-6">
-            <h1 className="text-[#13293d] text-sm font-black m-0 tracking-tight">
-              HELLO, <span className="text-[#10a1b6] uppercase">{name}</span>
-            </h1>
-            <p className="text-xs font-bold tracking-widest text-gray-500 uppercase m-0 mt-1">
-              Authorized System Controller • Portal Admin
-            </p>
-          </div>
-
-          <div className="flex-shrink-0">
-            <img
-              src={userpng}
-              alt="User Avatar"
-              className="w-13 h-13  rounded-full border-2 border-[#10a1b6] object-cover"
-            />
-          </div>
-        </div>
+        </main>
       </div>
     </div>
   );

@@ -17,7 +17,9 @@ function TeacherProfile() {
 
   useEffect(() => {
     // Yahan hum direct full backend URL use kar rahe hain
-    axios.get('http://localhost:3000/teacherprofile') 
+       axios.get('http://localhost:3000/api/v1/teacherprofile', {
+    withCredentials: true
+  })
       .then((res) => {
         setName(res.data.name);
         setTeid(res.data.teid);
@@ -29,7 +31,7 @@ function TeacherProfile() {
         setSecAnswer(res.data.SecAnswer);  
       })
       .catch((err) => {
-        console.error("Data fetch karne mein error:", err);
+        console.error(" error in data fetching:", err);
       });
   }, []);
 
