@@ -40,12 +40,14 @@ function AdminLogin() {
       const responseData = response.data?.data;
       const loggedInUser = responseData?.user;
 
-      if (loggedInUser && loggedInUser.role === 'admin') {
+      // Role check case-insensitive — backend 'Admin' ya 'admin' dono ho sakta hai
+      const userRole = (loggedInUser?.role || '').toLowerCase();
+
+      if (loggedInUser && userRole === 'admin') {
         toast.success('Clearance authorized! Welcome back, Administrator.', { id: toastId });
         
-        // Save tokens and user details
         localStorage.setItem('token', responseData.accessToken);
-        localStorage.setItem('userRole', loggedInUser.role);
+        localStorage.setItem('userRole', 'admin'); // hamesha lowercase
         localStorage.setItem('user', JSON.stringify(loggedInUser));
 
         setFormData({ email_address: '', password: '' });
@@ -54,7 +56,7 @@ function AdminLogin() {
           navigate('/adminprofile');
         }, 1200);
       } else {
-        toast.error(`Clearance Rejected: Profile role is ${loggedInUser?.role || 'unidentified'}`, { id: toastId });
+        toast.error(`Clearance Rejected: Role is "${loggedInUser?.role || 'unknown'}" — Admin access required.`, { id: toastId });
       }
     } catch (error) {
       console.error('Admin Login Failure:', error);

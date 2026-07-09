@@ -1,113 +1,174 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import Head from '../Header/Header';
-import { PDFDownloadLink, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import API from '../../../api';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 function AttendStudent() {
-    const BASE_URL = 'http://localhost:3000'; // API Port 3000
+  const [attendances,  setAttendances]  = useState([]);
+  const [dateFilter,   setDateFilter]   = useState('');
+  const [classFilter,  setClassFilter]  = useState('');
+  const [studentName,  setStudentName]  = useState('');
+  const [studentId,    setStudentId]    = useState('');
+  const [loading,      setLoading]      = useState(true);
 
-    const [attendances, setAttendances] = useState([]);
-    const [dateFilter, setDateFilter] = useState('');
-    const [classFilter, setClassFilter] = useState('');
-    const [studentName, setStudentName] = useState('');
-    const [userName, setUserName] = useState('');
-    const [studentId, setStudentId] = useState('');
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        // Step 1: student profile se stdid aur name lo
+        const profileRes = await API.get('/api/v1/studentprofile');
+        const d = profileRes.data?.data || profileRes.data;
+        const myStdid = d.stdid || '';
+        setStudentId(myStdid);
+        setStudentName(d.name || '');
 
-    useEffect(() => {
-        fetchStudentProfile();
-        fetchAttendances();
-    }, []);
-
-    const fetchStudentProfile = async () => {
-        try {
-            const response = await axios.get(`${BASE_URL}/studentprofile`);
-            setStudentId(response.data.username);
-            setStudentName(response.data.name);
-            setUserName(response.data.username);
-        } catch (error) {
-            console.log('Error fetching profile:', error);
-        }
+        // Step 2: sab attendance records lo
+        const attRes = await API.get('/api/attendance/attendancemark');
+        const all = attRes.data?.data || attRes.data || [];
+        // Step 3: sirf apni attendance filter karo
+        setAttendances(Array.isArray(all) ? all.filter(a => a.studentId === myStdid) : []);
+      } catch (err) {
+        console.error('Attendance fetch error:', err);
+        toast.error('Attendance load nahi ho saki');
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchAll();
+  }, []);
 
-    const fetchAttendances = async () => {
-        try {
-            const response = await axios.get(`${BASE_URL}/attendancemark`);
-            setAttendances(response.data);
-        } catch (error) {
-            toast.error('Failed to fetch attendances');
-        }
-    };
+  // Client-side filter
+  const filteredAttendances = attendances.filter(a =>
+    (classFilter ? (a.classId || '').toLowerCase().includes(classFilter.toLowerCase()) : true) &&
+    (dateFilter  ? (a.date || '').includes(dateFilter) : true)
+  );
 
-    const filteredAttendances = attendances.filter((attendance) =>
-        attendance.studentId === studentId && 
-        (classFilter ? attendance.classId.toLowerCase().includes(classFilter.toLowerCase()) : true) &&
-        (dateFilter ? attendance.date === dateFilter : true)
-    );
+  // PDF generate
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.text('Attendance Report', 14, 16);
+    doc.text(`Student: ${studentName} (${studentId})`, 14, 24);
+    doc.autoTable({
+      head: [['Class ID', 'Subject', 'Teacher ID', 'Date', 'Time']],
+      body: filteredAttendances.map(a => [
+        a.classId || '—',
+        a.subject  || '—',
+        a.teacherId || '—',
+        a.date     || '—',
+        a.time     || '—',
+      ]),
+      startY: 30,
+    });
+    doc.save('my_attendance_report.pdf');
+  };
 
-    // PDF Component
-    const MyDocument = () => (
-        <Document>
-            <Page size="A4" style={{ padding: 20 }}>
-                <Text style={{ fontSize: 18, marginBottom: 10 }}>Attendance Report</Text>
-                <Text>Student: {studentName} ({userName})</Text>
-                {filteredAttendances.map((a, index) => (
-                    <Text key={index}>{a.classId} - {a.subject} - {a.date}</Text>
-                ))}
-            </Page>
-        </Document>
-    );
+  return (
+    <div>
+      <Head />
 
-    return (
-        <main className="p-4">
-            <Head />
-            <div className="max-w-4xl mx-auto mt-6 md:ml-[290px]">
-                <h2 className="text-2xl font-bold mb-4">Attendance</h2>
-                
-                {/* Filters */}
-                <div className="flex gap-4 mb-6">
-                    <input 
-                        className="border p-2 rounded" 
-                        placeholder="Search Class ID" 
-                        onChange={(e) => setClassFilter(e.target.value)} 
-                    />
-                    <input 
-                        type="date" 
-                        className="border p-2 rounded" 
-                        onChange={(e) => setDateFilter(e.target.value)} 
-                    />
-                </div>
+      <div className="max-w-4xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
 
-                {/* Table */}
-                <table className="w-full border-collapse border">
-                    <thead>
-                        <tr className="bg-gray-100">
-                            <th className="border p-2">Class ID</th>
-                            <th className="border p-2">Subject</th>
-                            <th className="border p-2">Date</th>
-                            <th className="border p-2">Time</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredAttendances.map((attendance) => (
-                            <tr key={attendance._id} className="text-center">
-                                <td className="border p-2">{attendance.classId}</td>
-                                <td className="border p-2">{attendance.subject}</td>
-                                <td className="border p-2">{attendance.date}</td>
-                                <td className="border p-2">{attendance.time}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-xl font-black text-[#063a67]">My Attendance</h2>
+            <p className="text-xs text-gray-400 font-semibold mt-0.5">
+              {studentName && `Student: ${studentName} · ID: ${studentId}`}
+            </p>
+          </div>
+          <button
+            onClick={generatePDF}
+            className="bg-[#384D6C] hover:bg-[#283952] text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
+          >
+            Download PDF
+          </button>
+        </div>
 
-                <div className="mt-4">
-                    <PDFDownloadLink document={<MyDocument />} fileName="report.pdf" className="bg-blue-500 text-white p-2 rounded">
-                        {({ loading }) => (loading ? 'Loading...' : 'Download PDF')}
-                    </PDFDownloadLink>
-                </div>
+        {/* Filters */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <input
+            type="text"
+            placeholder="Search by Class ID..."
+            value={classFilter}
+            onChange={e => setClassFilter(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-sm text-gray-700 focus:outline-none focus:border-[#384D6C]"
+          />
+          <input
+            type="date"
+            value={dateFilter}
+            onChange={e => setDateFilter(e.target.value)}
+            className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-sm text-gray-700 focus:outline-none focus:border-[#384D6C]"
+          />
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          <div className="bg-white border-2 border-gray-100 rounded-[16px] p-4 text-center shadow-sm">
+            <p className="text-2xl font-black text-[#384D6C]">{attendances.length}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Total Classes</p>
+          </div>
+          <div className="bg-white border-2 border-gray-100 rounded-[16px] p-4 text-center shadow-sm">
+            <p className="text-2xl font-black text-emerald-600">{filteredAttendances.length}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Filtered</p>
+          </div>
+          <div className="bg-white border-2 border-gray-100 rounded-[16px] p-4 text-center shadow-sm col-span-2 sm:col-span-1">
+            <p className="text-2xl font-black text-blue-600">
+              {attendances.length > 0 ? Math.round((attendances.length / attendances.length) * 100) : 0}%
+            </p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mt-1">Attendance</p>
+          </div>
+        </div>
+
+        {/* Table */}
+        {loading ? (
+          <div className="flex items-center gap-3 text-gray-400 font-semibold py-8">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#384D6C] rounded-full animate-spin" />
+            Loading attendance records...
+          </div>
+        ) : (
+          <div className="bg-white border-2 border-gray-100 rounded-[20px] shadow-sm overflow-hidden">
+            <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="bg-[#384D6C] text-white font-black uppercase tracking-wider sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3.5">Class ID</th>
+                    <th className="px-4 py-3.5">Subject</th>
+                    <th className="px-4 py-3.5">Teacher ID</th>
+                    <th className="px-4 py-3.5">Date</th>
+                    <th className="px-4 py-3.5">Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 text-gray-700 font-medium">
+                  {filteredAttendances.length > 0 ? (
+                    filteredAttendances.map((a, i) => (
+                      <tr key={a._id || i} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="px-4 py-3 font-bold text-[#384D6C]">{a.classId || '—'}</td>
+                        <td className="px-4 py-3">
+                          <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded font-bold text-[11px] uppercase">
+                            {a.subject || '—'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-slate-500">{a.teacherId || '—'}</td>
+                        <td className="px-4 py-3 text-slate-500">{a.date || '—'}</td>
+                        <td className="px-4 py-3 text-[#10a1b6] font-bold">{a.time || '—'}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="px-4 py-10 text-center text-gray-400 font-semibold">
+                        No attendance records found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-        </main>
-    );
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default AttendStudent;

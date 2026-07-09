@@ -39,11 +39,14 @@ function ManagerLogin() {
       const responseData = response.data?.data;
       const loggedInUser = responseData?.user;
 
-      if (loggedInUser && loggedInUser.role === 'manager') {
+      // Role check case-insensitive karo — backend 'Manager' ya 'manager' dono save kar sakta hai
+      const userRole = (loggedInUser?.role || '').toLowerCase();
+
+      if (loggedInUser && userRole === 'manager') {
         toast.success('Manager validation success! Opening workspace.', { id: toastId });
         
         localStorage.setItem('token', responseData.accessToken);
-        localStorage.setItem('userRole', loggedInUser.role);
+        localStorage.setItem('userRole', 'manager'); // hamesha lowercase save karo
         localStorage.setItem('user', JSON.stringify(loggedInUser));
 
         setFormData({ email_address: '', password: '' });
@@ -52,7 +55,7 @@ function ManagerLogin() {
           navigate('/managerdashboard');
         }, 1200);
       } else {
-        toast.error(`Access Denied: Logged in profile role is ${loggedInUser?.role || 'unidentified'}`, { id: toastId });
+        toast.error(`Access Denied: Role is "${loggedInUser?.role || 'unknown'}" — Manager access required.`, { id: toastId });
       }
     } catch (error) {
       console.error('Manager Login Failure:', error);
