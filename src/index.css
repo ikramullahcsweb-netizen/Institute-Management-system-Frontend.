@@ -1,12 +1,30 @@
-@import "tailwindcss"; 
+@import "tailwindcss";
 
+@theme {
+  --color-brand-green: #72C05B;
+  --color-brand-teal: #2FAFB5;
+  --color-brand-blue: #2B82C9;
+  --color-brand-dark: #0b151e;
+  --color-brand-dark-accent: #13293d;
+}
 
-/* body {
+body {
   margin: 0;
-  /* Logo ke dark teal se start hone wala background */
-  /* background: radial-gradient(circle at top right, #1a759f20, #001e26),
-              radial-gradient(circle at bottom left, #76c89315, #001e26);
-  background-color: #001e26;
-  color: white;
-}  */
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+/* Glassmorphism utility classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
 

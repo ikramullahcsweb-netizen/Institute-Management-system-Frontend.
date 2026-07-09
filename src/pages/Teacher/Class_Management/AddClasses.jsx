@@ -15,11 +15,11 @@ function AddAdditionalClasses() {
   const [subject, setSubject] = useState('');
   
   const navigator = useNavigate();
-  const BASE_URL = 'http://localhost:3000'; // Apka backend URL
+  const BASE_URL = 'http://localhost:3000'; // Correct backend port
 
   // 1. API Integration: Teacher Profile Fetching
   useEffect(() => {
-    axios.get(`${BASE_URL}/teacherprofile`)
+    axios.get(`${BASE_URL}/api/v1/teacherprofile`, { withCredentials: true })
       .then((res) => {
         setTeacher(res.data.name);
         setTeacherId(res.data.teid);
@@ -52,7 +52,7 @@ function AddAdditionalClasses() {
   const submitRequest = async () => {
     try {
       const payload = { teacher, date: date1, grade, subject, classid, teacherid, status: 'Pending' };
-      await axios.post(`${BASE_URL}/add-additional-class`, payload); // API Endpoint
+      await axios.post(`${BASE_URL}/api/classes/addclass`, payload, { withCredentials: true }); // Correct API route
       
       Swal.fire({
         title: "Request Processed!",

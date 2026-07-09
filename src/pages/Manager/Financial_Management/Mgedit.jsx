@@ -9,7 +9,7 @@ import logo from "../../../assets/step2 scientist logo.jpeg";
 function Mgedit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const API_URL = "http://localhost:3000";
+  const API_URL = ""; // Vite proxy use karta hai
 
   const [formData, setFormData] = useState({
     itnumber: "",
@@ -24,7 +24,7 @@ function Mgedit() {
   useEffect(() => {
     const fetchPayment = async () => {
       try {
-        const res = await axios.get(`${API_URL}/getpayment/${id}`);
+        const res = await axios.get(`${API_URL}/api/payments/getpayment/${id}`, { withCredentials: true });
         // Date format fix karne ke liye agar database ISO string bhej raha ho
         const data = res.data;
         if (data.date) data.date = data.date.split('T')[0];

@@ -17,9 +17,9 @@ function MgView() {
     try {
       // Yahan port 3000 update kar diya gaya hai
       const [onlineRes, bankRes, cashRes] = await Promise.all([
-        axios.get('http://localhost:3000/displayonline'),
-        axios.get('http://localhost:3000/displaybank'),
-        axios.get('http://localhost:3000/displaycash')
+        axios.get('http://localhost:3000/api/payments/displayonline', { withCredentials: true }),
+        axios.get('http://localhost:3000/api/payments/displaybank', { withCredentials: true }),
+        axios.get('http://localhost:3000/api/payments/displaycash', { withCredentials: true })
       ]);
       setAllPayments([...onlineRes.data, ...bankRes.data, ...cashRes.data]);
     } catch (error) {
@@ -31,7 +31,7 @@ function MgView() {
   const handleDelete = async (id) => {
     try {
       // Yahan bhi port 3000 update kar diya gaya hai
-      await axios.delete(`http://localhost:3000/deletepayment/${id}`);
+      await axios.delete(`http://localhost:3000/api/payments/deletepayment/${id}`, { withCredentials: true });
       setAllPayments(allmpayments.filter(item => item._id !== id));
       toast.success('Payment Deleted Successfully');
     } catch (err) {

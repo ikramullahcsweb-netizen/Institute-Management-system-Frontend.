@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react'
-import './Style.css'
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import './Style.css';
+import API from '../../../api';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useState } from 'react';
 import Swal from 'sweetalert2';
 
 
@@ -16,22 +15,24 @@ function EditNotice() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:3000/getnotice/' + id)
+        API.get(`/api/lessons/getnotice/${id}`)
             .then((res) => {
-                setTopic(res.data.topic);
-                setDate(res.data.date);
-                setDescription(res.data.description);
+                const d = res.data?.data || res.data;
+                setTopic(d.topic);
+                setDate(d.date);
+                setDescription(d.description);
             })
+            .catch((err) => {
+                console.error(err);
+            });
     }, [id]);
-
-
 
     const update = (e) => {
         e.preventDefault();
-        axios.put('http://localhost:3000/updatenotice/' + id, {
-            topic: topic,
-            date: date,
-            description: description
+        API.put(`/api/lessons/updatenotice/${id}`, {
+            topic,
+            date,
+            description
         })
             .then((res) => {
                 console.log('Success');
@@ -40,7 +41,7 @@ function EditNotice() {
                     'Your notice has been successfully updated.',
                     'success'
                 ).then(() => {
-                    navigate('/myclasses'); 
+                    navigate('/MyClassess');
                 });
             })
             .catch((err) => {
@@ -79,7 +80,7 @@ function EditNotice() {
 
                     <div class="button-group">
                         <button type="submit">Edit</button>
-                        <Link to="/myclasses" class="cancelbutton_EN">Cancel</Link>
+                        <Link to="/MyClassess" class="cancelbutton_EN">Cancel</Link>
                     </div>
                 </form>
 

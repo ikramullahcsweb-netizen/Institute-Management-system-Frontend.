@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import API from '../../../api';
 import Head from '../Header/Header'
 
 import Swal from 'sweetalert2';
@@ -26,9 +27,10 @@ function MyClasses() {
   const [subject, setSubject] = useState('');
 
   useEffect(() => {
-    axios.get('http://localhost:3000/viewnotice')
+    API.get('/api/lessons/viewnotice')
       .then(res => {
-        setNotices(res.data);
+        const data = res.data?.data || res.data;
+        setNotices(Array.isArray(data) ? data : []);
       })
       .catch(err => console.error(err));
 
@@ -40,13 +42,17 @@ function MyClasses() {
   }, []);
 
   useEffect(() => {
-    axios.get('/teacherprofile')
+    API.get('/api/v1/teacherprofile')
       .then((res) => {
-        const tid = res.data.teid;
+        const profile = res.data?.data || res.data;
+        const tid = profile.teid;
 
-        axios.get('/viewnotice')
+        API.get('/api/lessons/viewnotice')
           .then((noticeRes) => {
-            const viewnotice = noticeRes.data.filter(viewnotices => viewnotices.teacher_id === tid);
+            const allNotices = noticeRes.data?.data || noticeRes.data;
+            const viewnotice = (Array.isArray(allNotices) ? allNotices : []).filter(
+              (viewnotices) => viewnotices.teacher_id === tid
+            );
             setNotices(viewnotice);
           })
           .catch((err) => {
@@ -78,7 +84,7 @@ function MyClasses() {
       confirmButtonText: 'Yes, delete it!'
     }).then((result) => {
       if (result.isConfirmed) {
-        axios.delete('http://localhost:3000/deletenotice/' + id)
+        API.delete(`/api/lessons/deletenotice/${id}`)
           .then((res) => {
             console.log('success');
             Swal.fire(
@@ -175,7 +181,7 @@ function MyClasses() {
                 <br />
                 <div className="notice-title">{notice.topic}</div>
                 <div className="notice-description">{notice.description}</div>
-                <Link to={`/editnotice/${notice._id}`} className="edit_button">Edit Notice <FaEdit style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /></Link>
+                <Link to={`/EditNotice/${notice._id}`} className="edit_button">Edit Notice <FaEdit style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /></Link>
                 <button className="delete_button" onClick={(e) => handleDeleteNotice(notice._id)}>Delete Notice <MdDelete style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} /> </button>
               </div>
             ))}
@@ -238,10 +244,11 @@ function MyClasses() {
   };
 
   useEffect(() => {
-    axios.get('/teacherprofile')
+    API.get('/api/v1/teacherprofile')
       .then((res) => {
-        setTeacher(res.data.name);
-        setSubject(res.data.subject);
+        const profile = res.data?.data || res.data;
+        setTeacher(profile.name);
+        setSubject(profile.subject);
       })
       .catch((err) => {
         console.log(err);
@@ -263,7 +270,7 @@ function MyClasses() {
           </div>
           <div className="notices">
             <h2 style={{ color: 'black' }}>Notices</h2>
-            <Link to="/createnotice" className="add_button ">
+            <Link to="/CreateNotice" className="add_button ">
               Add New Notice <IoIosAddCircle style={{ marginTop: '5px', marginLeft: '2px', fontSize: '13px' }} />
             </Link>
             {renderNotices()}

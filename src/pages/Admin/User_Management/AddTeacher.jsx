@@ -2,7 +2,7 @@
 
 
 import React, { useState } from "react";
-import axios from "axios";
+import API from "../../../api";
 import { useNavigate, Link } from "react-router-dom";
 import userpng from "./photos/User.png";
 import toast from "react-hot-toast";
@@ -79,8 +79,8 @@ function AddTeacher() {
     setLoading(true);
 
     try {
-      await axios.post(
-        "http://localhost:3000/api/v1/teacherregister",
+      await API.post(
+        "/api/v1/teacherregister",
         {
           name: data.name.trim(),
           username: data.username.trim(),
@@ -91,8 +91,7 @@ function AddTeacher() {
           subject: data.subject.trim(),
           password: data.password,
           SecAnswer: data.SecAnswer.trim(),
-        },
-        { withCredentials: true }
+        }
       );
 
       resetForm();

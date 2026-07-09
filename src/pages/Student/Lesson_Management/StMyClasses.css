@@ -7,7 +7,7 @@ body {
 .t_container {
     
     width: 100%;
-    max-width: 1200px;
+    max-width: 700px;
     margin-left: 50px;
     margin-right: 20px;
     overflow-x: hidden;
@@ -20,7 +20,7 @@ body {
 .main-content {
     padding: 20px;
     margin-top: -25px;
-    margin-left: 220px;
+    margin-left: 400px;
     overflow-y: auto;
 }
 .class_details h2{

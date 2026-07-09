@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import Head from '../Header/Header';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = '';
 
 function RequestSchedule() {
   const [teacher, setTeacher] = useState('');
@@ -26,7 +26,7 @@ function RequestSchedule() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axios.get(`${BASE_URL}/teacherprofile`);
+        const res = await axios.get(`${BASE_URL}/api/v1/teacherprofile`, { withCredentials: true });
         setTeacher(res.data.name);
         setTeacherId(res.data.teacherid || 'CS-TEACH-404');
         setSubject(res.data.subject || 'Database Management Systems & Lab');
@@ -57,7 +57,7 @@ function RequestSchedule() {
   const submitRequest = async () => {
     try {
       handleClick2(); // Trigger loading toast
-      await axios.post(`${BASE_URL}/createschedule`, {
+      await axios.post(`${BASE_URL}/api/classes/createschedule`, {
         teacher, classid, teacherid, date1, date2, date3, date4, grade, subject, status
       });
     } catch (error) {

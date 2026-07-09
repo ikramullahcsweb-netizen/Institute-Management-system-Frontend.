@@ -1,102 +1,198 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
-import loginimg from './photos/studentlogin.png';
-import logofull from '../../../../src/assets/step2 scientist logo.jpeg';
-import { FaEnvelope, FaLock, FaSignInAlt } from 'react-icons/fa';
+import { toast } from 'react-hot-toast';
+import { Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import API, { clearPreviousSession } from '../../../api';
+import logo from '../../../assets/crop logo.jfif';
 
 function StudentLogin() {
   const navigate = useNavigate();
-  const [data, setData] = useState({
-    email: '', 
+  const [formData, setFormData] = useState({
+    email_address: '',
     password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const loginStudent = async (e) => {
     e.preventDefault();
-    
-    if (!data.email || !data.password) {
-      toast.error("Please enter your email and password.");
+    const { email_address, password } = formData;
+
+    if (!email_address || !password) {
+      toast.error('Please enter your email and password.');
       return;
     }
 
+    setLoading(true);
+    const toastId = toast.loading('Logging into student dashboard...');
+
     try {
-      const response = await axios.post('http://localhost:3000/api/v1/studentlogin', {
-        email: data.email,
-        password: data.password
-      });
+      // Pehle purana session clear karo — role leakage rok'ta hai
+      clearPreviousSession();
+
+      // Backend email field expect karta hai, email_address nahi
+      const response = await API.post('/api/v1/studentlogin', { email: email_address, password });
       
-      // Success toast hata diya hai, ab sirf dashboard par le jayega
-      if (response.data) {
-        navigate('/studentdashboard');
-      }
+      const responseData = response.data?.data;
+      const loggedInUser = responseData?.student;
+      
+      toast.success('Welcome to Student Portal!', { id: toastId });
+      
+      // Token localStorage mein save karo (api.js interceptor isko har request mein lagata hai)
+      localStorage.setItem('token', responseData.accessToken);
+      localStorage.setItem('userRole', 'student');
+      localStorage.setItem('user', JSON.stringify(loggedInUser || {}));
+
+      setFormData({ email_address: '', password: '' });
+      
+      setTimeout(() => {
+        navigate('/StudentDashboard');
+      }, 1200);
     } catch (error) {
-      // Sirf error show hogi
-      toast.error(error.response?.data?.message || "Login failed. Check your email/password.");
+      console.error('Student Login Failure:', error);
+      toast.error(error.message || 'Credentials authentication failed.', { id: toastId });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="w-full min-h-screen bg-slate-50 flex items-stretch font-sans antialiased">
-      {/* Left Panel */}
-      <div className="hidden lg:block lg:w-[45%] xl:w-[50%] bg-slate-900 relative h-screen sticky top-0">
-        <img src={loginimg} alt="Banner" className="w-full h-full object-cover opacity-85" />
-      </div>
-
-      {/* Right Scrollable Panel */}
-      <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center px-4 py-12 md:p-16">
-        <div className="w-full max-w-[480px] space-y-8">
+    <main className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4">
+      <div className="w-full max-w-[950px] min-h-[550px] bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-100">
+        
+        {/* Left Side: Gradient Branding Hero */}
+        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-brand-blue via-brand-teal to-brand-green p-12 text-white text-center relative">
+          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px]"></div>
           
-          {/* Logo and Text Section */}
-          <div className="text-center space-y-3 flex flex-col items-center">
-            <img src={logofull} alt="Step 2 Scientist Logo" className="h-20 w-auto object-contain" />
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase">Student Portal</h2>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Empowering the next generation of scientists.
+          <div className="relative z-10 space-y-6 max-w-[320px]">
+            <img 
+              src={logo} 
+              alt="Step 2 Scientist" 
+              className="w-24 h-24 mx-auto rounded-full shadow-lg border-2 border-white/30" 
+            />
+            <div>
+              <h2 className="text-2xl font-black tracking-tight">Step 2 Scientist</h2>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mt-2">
+                Student Learning Portal
+              </p>
+            </div>
+            <div className="pt-6 border-t border-white/20">
+              <p className="text-xs text-white/70 leading-relaxed">
+                Unlock your potential. Keep track of materials, fee payment confirmations, and study rosters.
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Right Side: Authentication Panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16 bg-white">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-green/10 border border-brand-green/20 rounded-full text-[11px] font-bold text-brand-green tracking-wide uppercase mb-3">
+              <GraduationCap className="w-3.5 h-3.5" />
+              Student Authentication
+            </div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Student Portal</h1>
+            <p className="text-sm text-slate-400 mt-1">Access your educational workspace dashboard</p>
+          </div>
 
           <form onSubmit={loginStudent} className="space-y-4">
-            <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 space-y-4 shadow-sm">
-              <div className="space-y-1">
-                <label className="text-[11px] font-black uppercase text-slate-700 flex items-center gap-1.5">
-                  <FaEnvelope className="text-slate-400 text-xs" /> Email Address
-                </label>
+            
+            {/* Input Module: Email */}
+            <div className="space-y-1">
+              <label htmlFor="email_address" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Student Email Address
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail className="h-4 w-4 text-slate-400" />
+                </span>
                 <input 
                   type="email" 
-                  className="w-full bg-slate-50 border-2 rounded-xl px-4 py-3" 
-                  value={data.email} 
-                  onChange={(e) => setData({...data, email: e.target.value})} 
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-black uppercase text-slate-700 flex items-center gap-1.5">
-                  <FaLock className="text-slate-400 text-xs" /> Password
-                </label>
-                <input 
-                  type="password" 
-                  className="w-full bg-slate-50 border-2 rounded-xl px-4 py-3" 
-                  value={data.password} 
-                  onChange={(e) => setData({...data, password: e.target.value})} 
+                  id="email_address" 
+                  name="email_address" 
+                  placeholder="student@gmail.com" 
+                  value={formData.email_address}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
                 />
               </div>
             </div>
 
-            <button type="submit" className="w-full bg-[#5D7285] hover:bg-slate-800 text-white font-black uppercase py-4 rounded-xl flex items-center justify-center gap-2">
-              <FaSignInAlt /> Login
-            </button>
+            {/* Input Module: Password */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <label htmlFor="password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Access Password
+                </label>
+                <Link 
+                  to="/StudentForgetPassword" 
+                  className="text-xs font-bold text-brand-blue hover:text-brand-teal no-underline transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
 
-            <div className="text-center">
-              <Link to="/register" className="text-xs font-bold text-slate-500 hover:text-slate-900 uppercase underline">
-                New Student? Register here
+            {/* Submit Action */}
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 bg-brand-green text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-green/30 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Authorizing Student Session...' : 'Sign In to Portal'}
+              </button>
+            </div>
+
+          </form>
+
+          {/* Registration Redirect */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-500">
+              New student?{' '}
+              <Link to="/StudentRegister" className="font-bold text-brand-blue hover:text-brand-teal transition-colors no-underline">
+                Create student profile here
+              </Link>
+            </p>
+            <div className="mt-4">
+              <Link to="/login" className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors no-underline">
+                ← Go back to user gateways
               </Link>
             </div>
-          </form>
+          </div>
         </div>
+
       </div>
     </main>
   );

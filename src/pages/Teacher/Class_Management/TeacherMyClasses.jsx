@@ -6,7 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import Head from '../Header/Header';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = '';
 
 function TeacherMyClasses() {
   const [addclasses, setAddclasses] = useState([]);
@@ -16,7 +16,7 @@ function TeacherMyClasses() {
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const response = await axios.get(`${BASE_URL}/teachermyclasses/getclasses`); // Apne route ke mutabiq endpoint change karein
+        const response = await axios.get(`${BASE_URL}/api/classes/teachermyclasses/addclasses`, { withCredentials: true });
         setAddclasses(response.data);
       } catch (error) {
         console.error("Error fetching classes:", error);
@@ -38,7 +38,7 @@ function TeacherMyClasses() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${BASE_URL}/deleteclass/${id}`);
+          await axios.delete(`${BASE_URL}/api/classes/deleteClass/${id}`, { withCredentials: true });
           setAddclasses(addclasses.filter(item => item._id !== id));
           toast.success('Class Slot Dropped Successfully!');
         } catch (error) {

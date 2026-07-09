@@ -61,7 +61,7 @@ function AttendStudent() {
     return (
         <main className="p-4">
             <Head />
-            <div className="max-w-4xl mx-auto mt-6">
+            <div className="max-w-4xl mx-auto mt-6 md:ml-[290px]">
                 <h2 className="text-2xl font-bold mb-4">Attendance</h2>
                 
                 {/* Filters */}

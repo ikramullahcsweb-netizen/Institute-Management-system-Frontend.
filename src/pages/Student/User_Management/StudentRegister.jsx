@@ -1,251 +1,308 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-import loginimg from './photos/studentlogin.png';
-import logofull from '../../../assets/step2 scientist logo.jpeg';
-import { FaUser, FaEnvelope, FaPhone, FaGraduationCap, FaIdCard, FaLock } from 'react-icons/fa';
+import { User, Mail, Lock, Phone, GraduationCap, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import API from '../../../api';
+import logo from '../../../assets/crop logo.jfif';
+import loginbg from '../../../assets/office image.avif';
 
-function StudentRegister() {
+const StudentRegister = () => {
   const navigate = useNavigate();
-
-  // Generators for ID
-  function generateStudentId() {
-    const year = new Date().getFullYear().toString().slice(-2);
-    return `SID${year}${Math.floor(1000 + Math.random() * 9000)}`;
-  }
-
-  function generateWalletId() { 
-    return `WID${Math.floor(1000 + Math.random() * 9000)}`;
-  }
-
-  const [data, setData] = useState({
+  
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
-    contactnumber: '',
-    grade: '',
     username: '',
-    stdid: generateStudentId(),
     password: '',
-    repassword: '',
-    walletid: generateWalletId()
+    grade: '',
+    stdid: '',
+    contactnumber: '',
+    gender: 'Male',
+    parentname: '',
+    parentphonenumber: '',
+    SecAnswer: ''
   });
+  
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // API Submission Handler
-  const registerStudent = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Validation
-    if (!data.name || !data.email || !data.username || !data.password) {
-      toast.error('Please fill out all mandatory identity fields.');
+
+    if (!formData.stdid.trim()) {
+      toast.error('Student ID is required!');
+      return;
+    }
+    if (!formData.grade.trim()) {
+      toast.error('Grade is required!');
+      return;
+    }
+    if (!formData.username.trim()) {
+      toast.error('Username is required!');
+      return;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters!');
       return;
     }
 
-    if (data.password !== data.repassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
+    setLoading(true);
+    const toastId = toast.loading('Registering student profile...');
 
     try {
-      // API Call
-      const response = await axios.post('http://localhost:3000/api/v1/studentregister', data);
+      // Connect to student registration endpoint
+      const response = await API.post('/api/v1/studentregister', formData);
       
-      // Success Response
-      toast.success(response.data.message || "Registration Successful!");
+      toast.success('Student profile registered! Welcome aboard.', { id: toastId });
+      console.log('API Registration Success:', response.data);
       
-      // Navigate to login
-      navigate('/login');
-      
+      setTimeout(() => {
+        navigate('/StudentLogin');
+      }, 1500);
     } catch (error) {
-      // Error Handling
-      const errorMessage = error.response?.data?.message || "Something went wrong! Please try again.";
-      toast.error(errorMessage);
+      console.error('API Registration Error:', error);
+      toast.error(error.message || 'Student registration failed.', { id: toastId });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="w-full min-h-screen bg-slate-50 flex items-stretch font-sans antialiased">
-      
-      {/* Visual Creative Panel Slot - Sticky and Fixed */}
-      <div className="hidden lg:block lg:w-[45%] xl:w-[50%] bg-slate-900 relative h-screen sticky top-0">
-        <img 
-          src={loginimg} 
-          alt="Royal Academy Architecture Banner" 
-          className="w-full h-full object-cover opacity-85 absolute inset-0 mix-blend-luminosity hover:mix-blend-normal transition-all duration-700" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/30 to-transparent" />
-        
-        {/* Subtle Branding Watermark Overlap */}
-        <div className="absolute bottom-12 left-12 right-12 text-white space-y-2">
-          <span className="text-xs font-black uppercase tracking-widest text-[#0C7FDA] bg-white/10 px-3 py-1 rounded-md backdrop-blur-xs">
-            Student Portal Matrix
-          </span>
-          <h1 className="text-3xl font-black uppercase tracking-tight leading-none text-slate-100">
-            Shape Your Academic Footprint
-          </h1>
-          <p className="text-xs text-slate-300 font-medium">
-            Join a system configured with utility dashboard architectures and global tracking.
-          </p>
-        </div>
-      </div>
+    <section 
+      className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative pt-20"
+      style={{ backgroundImage: `url(${loginbg})` }}
+    >
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-0"></div>
 
-      {/* Input Action Form Presentation Deck Container - Scrollable */}
-      <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center px-4 py-12 md:p-16 overflow-y-auto max-h-screen bg-white">
-        <div className="w-full max-w-[480px] space-y-8">
+      <div className="w-full max-w-2xl bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/20 z-10 my-10">
+        
+        {/* Header Section */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <img
+            src={logo}
+            alt="Step 2 Scientist Logo"
+            className="h-16 w-16 object-contain rounded-full shadow-md mb-4 border border-slate-100"
+          />
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Student Registration</h2>
+          <p className="text-slate-500 text-xs mt-1">Enroll your student profile to access learning workspaces</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          {/* Header Panel Branding Nodes */}
-          <div className="text-center space-y-3 flex flex-col items-center mt-30 md:mt-38">
-            <div className="max-w-[200px] hover:scale-105 transition-transform duration-300">
-              <img src={logofull} alt="Royal Academy Main Shield Seal" className="w-40 h-30 object-contain" />
-            </div>
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black tracking-tight text-slate-900 uppercase">
-                Create Account
-              </h2>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Welcome to step 2 scientist
-              </p>
+          {/* Full Name */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <User className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="name"
+              type="text"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Email Address */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Mail className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="email"
+              type="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Username */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <User className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="username"
+              type="text"
+              placeholder="Choose Username"
+              value={formData.username}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Student ID (stdid) */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <GraduationCap className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="stdid"
+              type="text"
+              placeholder="Student ID (e.g., STD-1002)"
+              value={formData.stdid}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Contact Number */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Phone className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="contactnumber"
+              type="tel"
+              placeholder="Student Mobile Number"
+              value={formData.contactnumber}
+              onChange={handleChange}
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Grade / Class */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <GraduationCap className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="grade"
+              type="text"
+              placeholder="Grade (e.g. Matric / Class 10)"
+              value={formData.grade}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Parent Name */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <User className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="parentname"
+              type="text"
+              placeholder="Parent/Guardian Name"
+              value={formData.parentname}
+              onChange={handleChange}
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Parent Phone Number */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Phone className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="parentphonenumber"
+              type="tel"
+              placeholder="Parent Contact Number"
+              value={formData.parentphonenumber}
+              onChange={handleChange}
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
+
+          {/* Gender */}
+          <div className="relative w-full">
+            <select
+              name="gender"
+              value={formData.gender}
+              onChange={handleChange}
+              className="w-full h-11 px-3 text-slate-800 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50 appearance-none"
+            >
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </div>
 
-          {/* Core Master Registry Node Handle */}
-          <form onSubmit={registerStudent} className="space-y-4">
-            
-            <div className="bg-white border-2 border-slate-900 rounded-2xl p-5 md:p-6 space-y-4 shadow-sm">
-              
-              <div className="space-y-1">
-                <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                  <FaUser className="text-slate-400 text-xs" /> Full Name
-                </label>
-                <input 
-                  type="text" 
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                  value={data.name} 
-                  onChange={(e) => setData({...data, name: e.target.value})}
-                />
-              </div>
+          {/* Security Answer */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <ShieldCheck className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="SecAnswer"
+              type="text"
+              placeholder="Security Answer (for password reset)"
+              value={formData.SecAnswer}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
+          </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaEnvelope className="text-slate-400 text-xs" /> Email
-                  </label>
-                  <input 
-                    type="email" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                    value={data.email} 
-                    onChange={(e) => setData({...data, email: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaPhone className="text-slate-400 text-xs" /> Contact Number
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                    value={data.contactnumber} 
-                    onChange={(e) => setData({...data, contactnumber: e.target.value})} 
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                  <FaGraduationCap className="text-slate-400 text-sm" /> Academic Grade Level
-                </label>
-                <select 
-                  className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs appearance-none cursor-pointer" 
-                  value={data.grade} 
-                  onChange={(e) => setData({...data, grade: e.target.value})}
-                >
-                  <option value="">Select Enrolled Grade</option>
-                  <option value="6">database</option>
-                  <option value="7">web development 7</option>
-                  <option value="8">data science</option>
-                  <option value="9">meachine learning</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-200">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaUser className="text-slate-400 text-xs" /> Account Username
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                    value={data.username} 
-                    onChange={(e) => setData({...data, username: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaIdCard className="text-slate-400 text-xs" /> System Auto-ID
-                  </label>
-                  <input 
-                    type="text" 
-                    className="w-full bg-slate-100 border-2 border-slate-200 text-[#0C7FDA] font-mono font-black text-xs rounded-xl px-4 py-3 focus:outline-none cursor-not-allowed select-none shadow-inner" 
-                    value={data.stdid} 
-                    readOnly 
-                  />
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-dashed border-slate-200">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaLock className="text-slate-400 text-xs" /> Password
-                  </label>
-                  <input 
-                    type="password" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                    value={data.password} 
-                    onChange={(e) => setData({...data, password: e.target.value})}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-[11px] font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
-                    <FaLock className="text-slate-400 text-xs" /> Re-Enter Security
-                  </label>
-                  <input 
-                    type="password" 
-                    className="w-full bg-slate-50 border-2 border-slate-200 focus:border-[#384D6C] text-slate-900 font-bold text-xs rounded-xl px-4 py-3 focus:outline-none transition-colors shadow-xs" 
-                    value={data.repassword} 
-                    onChange={(e) => setData({...data, repassword: e.target.value})}
-                  />
-                </div>
-              </div>
-
-            </div>
-
-            <div className="space-y-4 pt-2">
-              <button 
-                type="submit" 
-                className="w-full bg-[#5D7285] hover:bg-[#4a5c6d] text-white text-xs font-black uppercase tracking-widest py-4 rounded-xl border-2 border-slate-950 transition-colors shadow-xs active:scale-[0.99] transform"
-              >
-                Sign Up Enrolment Node
-              </button>
-            </div>
-            <div className="flex gap-2 justify-center text-center text-sm text-gray-600 mt-1">
-            <p>Already have an account?</p>
+          {/* Password */}
+          <div className="relative w-full md:col-span-2">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Lock className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Choose password (min 6 characters)"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={6}
+              className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+            />
             <button
               type="button"
-              className="text-[#1688B5] hover:underline cursor-pointer"
-              onClick={() => navigate("/studentlogin")}
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
             >
-              Sign in
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+              ) : (
+                <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+              )}
             </button>
           </div>
 
-          </form>
-        </div>
+          {/* Submit Action */}
+          <div className="md:col-span-2 pt-4">
+            <button 
+              type="submit" 
+              disabled={loading}
+              className="w-full h-11 bg-gradient-to-r from-brand-blue via-brand-teal to-brand-green text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-green/30 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+            >
+              {loading ? 'Registering Student Profile...' : 'Complete Registration'}
+            </button>
+          </div>
+
+        </form>
+
+        <p className="text-center text-sm text-slate-500 mt-6">
+          Already registered?{' '}
+          <Link to="/StudentLogin" className="text-brand-blue font-bold hover:text-brand-teal transition-colors no-underline">
+            Login
+          </Link>
+        </p>
       </div>
-    </main>
+    </section>
   );
-}
+};
 
 export default StudentRegister;

@@ -18,9 +18,9 @@ function AdReport() {
         try {
             // Backend URL: localhost:5000
             const [onlineRes, bankRes, cashRes] = await Promise.all([
-                axios.get('http://localhost:5000/displayonline'),
-                axios.get('http://localhost:5000/displaybank'),
-                axios.get('http://localhost:5000/displaycash')
+                axios.get('http://localhost:3000/displayonline'),
+                axios.get('http://localhost:3000/displaybank'),
+                axios.get('http://localhost:3000/displaycash')
             ]);
             
             const allPaymentsData = [...onlineRes.data, ...bankRes.data, ...cashRes.data];

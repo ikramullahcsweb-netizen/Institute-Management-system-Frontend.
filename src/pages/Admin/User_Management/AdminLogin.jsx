@@ -1,174 +1,192 @@
-
-
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import loginimg from './photos/managerlogin.png';
+import { Mail, Lock, Eye, EyeOff, ShieldAlert } from 'lucide-react';
+import API, { clearPreviousSession } from '../../../api';
+import logo from '../../../assets/crop logo.jfif';
 
 function AdminLogin() {
   const navigate = useNavigate();
-  const [data, setData] = useState({
-    email_address: '', //  Backend standard ke mutabik username ko email_address se change kiya
+  const [formData, setFormData] = useState({
+    email_address: '',
     password: ''
   });
-  const [loading, setLoading] = useState(false); //  Multiple clicks rokne ke liye state
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const loginAdmin = async (e) => {
     e.preventDefault();
-    const { email_address, password } = data;
+    const { email_address, password } = formData;
 
     if (!email_address || !password) {
-      toast.error('Please fulfill all credentials parameters.');
+      toast.error('Please enter your email and password.');
       return;
     }
 
     setLoading(true);
-    console.log(" Admin login process triggered for:", email_address);
+    const toastId = toast.loading('Authenticating credentials...');
 
     try {
-      // Backend hit kar rahe hain direct live port par
-      const response = await fetch("http://localhost:3000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email_address, password }),
-      });
+      // Pehle purana session clear karo — role leakage rok'ta hai
+      clearPreviousSession();
 
-      const resBody = await response.json();
-      console.log(" Server Response:", resBody);
-
-      if (!response.ok) {
-        // 🔥 Server se aane wala exact error block screen par dikhayenge
-        throw new Error(resBody.message || "Authentication node rejection.");
-      }
-
-      const responseData = resBody.data; 
+      // Connect to the API server via API client
+      const response = await API.post('/api/auth/login', { email_address, password });
+      
+      const responseData = response.data?.data;
       const loggedInUser = responseData?.user;
 
-      // 🛡️ Matrix validation verify kar rahe hain ke logged-in user waqai Admin hai
-      if (loggedInUser && loggedInUser.role === "admin") {
-        toast.success('Authentication handshake clear! Welcome back, Admin.');
+      if (loggedInUser && loggedInUser.role === 'admin') {
+        toast.success('Clearance authorized! Welcome back, Administrator.', { id: toastId });
         
-        // Save security tokens safely
-        localStorage.setItem("token", responseData.accessToken);
-        localStorage.setItem("userRole", loggedInUser.role);
+        // Save tokens and user details
+        localStorage.setItem('token', responseData.accessToken);
+        localStorage.setItem('userRole', loggedInUser.role);
+        localStorage.setItem('user', JSON.stringify(loggedInUser));
 
-        setData({ email_address: '', password: '' });
+        setFormData({ email_address: '', password: '' });
         
         setTimeout(() => {
           navigate('/adminprofile');
         }, 1200);
       } else {
-        toast.error(`Access Denied: Logged in as ${loggedInUser?.role || 'User'}, not an Admin.`);
+        toast.error(`Clearance Rejected: Profile role is ${loggedInUser?.role || 'unidentified'}`, { id: toastId });
       }
-
     } catch (error) {
-      console.error("❌ Live authentication stream exception:", error);
-      // 🔥 Server agar off ho ya network issue ho to handle karega
-      toast.error(error.message || 'An error occurred during credential validation.');
+      console.error('Admin Login Failure:', error);
+      toast.error(error.message || 'Credentials authentication failed.', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 font-sans flex items-center justify-center p-0 md:p-6">
-      {/* Core Split-Screen Gateway Frame */}
-      <div className="w-full max-w-[1100px] min-h-[650px] bg-white md:rounded-[24px] shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-gray-100">
+    <main className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4">
+      <div className="w-full max-w-[950px] min-h-[550px] bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-100">
         
-        {/* Left Aspect: High-Fidelity Branding Vector Visual */}
-        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-[#063a67] to-[#12538c] p-12 relative text-white text-center">
-          <div className="absolute inset-0 bg-blue-950/10 backdrop-blur-[2px]"></div>
+        {/* Left Side: Gradient Branding Hero */}
+        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-brand-blue via-brand-teal to-brand-green p-12 text-white text-center relative">
+          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px]"></div>
           
-          <div className="relative z-10 space-y-6 max-w-[400px]">
+          <div className="relative z-10 space-y-6 max-w-[320px]">
             <img 
-              src={loginimg} 
-              alt="Security Infrastructure Gateway" 
-              className="w-full max-w-[280px] mx-auto drop-shadow-2xl animate-pulse [animation-duration:8s]" 
+              src={logo} 
+              alt="Step 2 Scientist" 
+              className="w-24 h-24 mx-auto rounded-full shadow-lg border-2 border-white/30" 
             />
             <div>
-              <h2 className="text-2xl font-extrabold tracking-tight m-0">Step 2 Scientist Academy</h2>
-              <p className="text-blue-200/80 text-xs font-semibold uppercase tracking-widest mt-2">Central Management Control Node</p>
+              <h2 className="text-2xl font-black tracking-tight">Step 2 Scientist</h2>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mt-2">
+                Central Control Center
+              </p>
+            </div>
+            <div className="pt-6 border-t border-white/20">
+              <p className="text-xs text-white/70 leading-relaxed">
+                Protected root workspace node. Authorized access credentials required for directory oversight.
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Right Aspect: Core Interactive Passkey UI Block */}
-        <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-16 bg-white relative">
-          
-          {/* Header Layout Component */}
-          <div className="mb-8 text-center md:text-left">
-            <div className="inline-block px-3 py-1 bg-blue-50 border border-blue-100 rounded-full text-[11px] font-bold text-[#063a67] tracking-wider uppercase mb-3">
-              Security Clearance Portal
+        {/* Right Side: Authentication Panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16 bg-white">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-blue/10 border border-brand-blue/20 rounded-full text-[11px] font-bold text-brand-blue tracking-wide uppercase mb-3">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Root Authentication
             </div>
-            <h1 className="text-3xl font-black text-[#063a67] m-0 tracking-tight">Admin Gateway</h1>
-            <p className="text-sm text-gray-400 font-medium mt-1">Provide credentials to sign into infrastructure dashboard</p>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Admin Gateway</h1>
+            <p className="text-sm text-slate-400 mt-1">Provide your credentials to verify administrator status</p>
           </div>
 
-          {/* Form Action Controls */}
-          <form onSubmit={loginAdmin} className="space-y-5">
+          <form onSubmit={loginAdmin} className="space-y-4">
             
-            {/* Input Module: User Identity Signature */}
-            <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-[12px] font-extrabold text-gray-700 uppercase tracking-wider">
+            {/* Input Module: Email */}
+            <div className="space-y-1">
+              <label htmlFor="email_address" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                 Admin Email Address
               </label>
-              <input 
-                type="email" 
-                id="email" 
-                name="email" 
-                placeholder="Enter admin email address" 
-                className="w-full p-3.5 border-2 border-gray-200 rounded-xl outline-none font-semibold text-gray-800 transition-all focus:border-[#063a67] focus:bg-white bg-gray-50 text-[15px]"
-                value={data.email_address} 
-                onChange={(e) => setData({...data, email_address: e.target.value})}
-                required
-              />
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type="email" 
+                  id="email_address" 
+                  name="email_address" 
+                  placeholder="name@step2scientist.com" 
+                  value={formData.email_address}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
+                />
+              </div>
             </div>
 
-            {/* Input Module: Cipher Passkey Matrix */}
-            <div className="space-y-1.5">
+            {/* Input Module: Password */}
+            <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <label htmlFor="password" className="block text-[12px] font-extrabold text-gray-700 uppercase tracking-wider">
+                <label htmlFor="password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   Access Password
                 </label>
                 <Link 
                   to="/adminforgetpassword" 
-                  className="text-[12px] font-bold text-[#063a67] hover:text-[#da4a0c] no-underline transition-colors"
+                  className="text-xs font-bold text-brand-blue hover:text-brand-teal no-underline transition-colors"
                 >
                   Forgot Password?
                 </Link>
               </div>
-              <input 
-                type="password" 
-                id="password" 
-                name="password" 
-                placeholder="••••••••" 
-                className="w-full p-3.5 border-2 border-gray-200 rounded-xl outline-none font-semibold text-gray-800 transition-all focus:border-[#063a67] focus:bg-white bg-gray-50 text-[15px]"
-                value={data.password} 
-                onChange={(e) => setData({...data, password: e.target.value})}
-                required
-              />
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
             </div>
 
-            {/* Operational Sign-In Execution Button */}
+            {/* Submit Action */}
             <div className="pt-4">
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full text-white cursor-pointer bg-[#063a67] text-center rounded-xl py-4 outline-none transition-all duration-200 text-[16px] font-extrabold hover:bg-gradient-to-r hover:from-[#da4a0c] hover:to-[#e60b45] hover:scale-[1.01] shadow-lg border-none disabled:opacity-50"
+                className="w-full h-11 bg-brand-blue text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-blue/30 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
               >
-                {loading ? "Verifying Root Privileges..." : "Sign In to System Terminal"}
+                {loading ? 'Authorizing Root Clearence...' : 'Sign In to Root Console'}
               </button>
             </div>
 
           </form>
 
-          {/* Institutional Integrity Stamp Footer */}
-          <div className="mt-12 text-center md:text-left border-t border-gray-100 pt-5">
-            <p className="text-[11px] text-gray-400 font-semibold m-0 uppercase tracking-widest">
-              Protected by Step 2 Scientist Academy Security Architecture
-            </p>
+          {/* Go Back Link */}
+          <div className="mt-6 text-center">
+            <Link to="/login" className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors no-underline">
+              ← Go back to user gateways
+            </Link>
           </div>
-
         </div>
 
       </div>

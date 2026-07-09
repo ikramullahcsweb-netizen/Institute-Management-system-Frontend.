@@ -75,7 +75,7 @@ const WeekTimetable = () => {
     <div  className='profilecontent'>
       
     
-    <div style={{ height: '900px', width: '1000px', position: 'relative' }}>
+    <div style={{ height: '900px', width: '1000px', position: 'relative' }}className='md:ml-[290px]'>
       {error && <div>Error: {error.message}</div>}
       <div>
         <input

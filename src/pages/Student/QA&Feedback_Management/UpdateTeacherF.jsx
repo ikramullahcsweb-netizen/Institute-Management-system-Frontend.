@@ -1,201 +1,166 @@
 import React, { useEffect, useState } from 'react';
-import './TFeedback.css';
-import axios from 'axios';
-import {useParams,useNavigate} from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
+import API from '../../../api';
 
 function UpdateTeacherF() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const {id} = useParams();
-  const [grade, setGrade] = useState();
-  const [subject, setSubject] = useState();
-  const [teacher, setTeacher] = useState();
-  const [sid, setSid] = useState();
-  const [tfeedback, setTFeedback] = useState();
-  const navigator = useNavigate();
-  const [teacherid, setteacherid] = useState([]);
+  const [grade, setGrade]         = useState('');
+  const [subject, setSubject]     = useState('');
+  const [teacher, setTeacher]     = useState('');
+  const [sid, setSid]             = useState('');
+  const [tfeedback, setTFeedback] = useState('');
+  const [teacherList, setTeacherList] = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [fetching, setFetching]   = useState(true);
 
-  
-  useEffect(() =>{
-    //get teacher feedback
-    axios.get('http://localhost:5000/getTFeedback/' + id)
-    .then((res) =>{
-      setGrade(res.data.grade);
-      setSubject(res.data.subject);
-      setTeacher(res.data.teacher);
-      setSid(res.data.sid);
-      setTFeedback(res.data.feedback);
-    })
-    .catch((err) => console.error(err));
-
-  },[id]);
-
-  
-  const update = (a) =>{
-    a.preventDefault();
-  
-  axios.put('http://localhost:5000/updateTFeedback/'+ id, {
-    grade:grade,
-    subject:subject,
-    teacher:teacher,
-    sid:sid,
-    tfeedback:tfeedback
-  })
-    .then(res =>{
-      
-      
-    })
-    .catch(err => console.error(err));
-
-  }
-
-  /*const[questions,setQuestions] = useState([]);
+  // Fetch existing feedback
   useEffect(() => {
-    axios.get('http://localhost:5000/MyQuestions')
-    .then((res) =>{
-      setQuestions(res.data);
-    })
-    .catch((err) => console.error(err));
-  },[]);*/
-  
-  const handleSubmit = (a) => {
-    a.preventDefault();
+    API.get(`/api/feedback/getTFeedback/${id}`)
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setGrade(d.grade     || '');
+        setSubject(d.subject || '');
+        setTeacher(d.teacher || '');
+        setSid(d.sid         || '');
+        setTFeedback(d.feedback || '');
+      })
+      .catch(err => console.error(err))
+      .finally(() => setFetching(false));
+  }, [id]);
+
+  // Teacher list
+  useEffect(() => {
+    API.get('/api/auth/getteachersadmin')
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setTeacherList(Array.isArray(d) ? d : []);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  // Auto-fill subject when teacher changes
+  useEffect(() => {
+    if (teacher && teacherList.length > 0) {
+      const sel = teacherList.find(t => t.name === teacher);
+      if (sel) setSubject(sel.subject || '');
+    }
+  }, [teacher, teacherList]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
     Swal.fire({
-      title: "Submit ",
-      text: "Are you sure you want to proceed ?",
-      icon: "question",
+      title: 'Update Feedback?',
+      icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, proceed!",
-      cancelButtonText: "Cancel",
-      
-    }).then((result) => {
+      confirmButtonColor: '#384D6C',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Update!',
+    }).then(async result => {
       if (result.isConfirmed) {
-        update(a); // Call submit function if result is confirmed
-        Swal.fire({
-          title: "Updated",
-          icon: "success",
-        });
-        handleClick2();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          icon: "error",
-        });
-        // Call submit function even if result is canceled
+        setLoading(true);
+        try {
+          await API.put(`/api/feedback/updateTFeedback/${id}`, {
+            grade, subject, teacher, sid, tfeedback
+          });
+          toast.success('Teacher feedback updated!');
+          setTimeout(() => navigate('/MyFeedbacks'), 1500);
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Update failed');
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
-  
-  
 
-  const handleClick2 = () => {
-    toast.loading('Processing...', {
-      style: {
-        background: 'black', // Customize the background color
-        color: '#ffffff', // Customize the text color
-        borderRadius: '10px', // Add border radius
-        border: '2px solid #ffffff', // Add border
-      },
-    });
-  
-    setTimeout(() => {
-      toast.dismiss();
-      setTimeout(() => {
-        toast.success('Updated!', {
-          style: {
-            background: '#28a745', // Green background color
-            color: '#ffffff', // White text color
-            borderRadius: '10px', // Rounded corners
-            border: '2px solid #ffffff', // White border
-          },
-          duration: 2000, // Display duration in milliseconds (3 seconds)
-          iconTheme: {
-            primary: '#ffffff', // White icon color
-            secondary: '#28a745', // Green icon color
-          },
-        });
-        setTimeout(() => {
-          navigator('/MyFeedbacks');
-        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
-      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
-    }, 5000); // Wait for 5 seconds before dismissing loading toast
-  };
-
-  useEffect(()=>{
-    axios.get('/teacherprofileall')
-    .then((res)=>{
-        setteacherid(res.data);             
-    })
-    .catch((err)=>{
-        console.log(err);
-    })
-  },[])
-
-  useEffect(() => {
-    if (teacher) {
-      axios.get('/teacherprofileall')
-        .then(res => {
-          const selectedTeacher = res.data.find(t => t.name === teacher);
-          if (selectedTeacher) {
-            setSubject(selectedTeacher.subject);
-          }
-        })
-        .catch(err => console.error(err));
-    }
-  }, [teacher]);
-
+  if (fetching) {
+    return (
+      <div><Head />
+        <div className="md:ml-[270px] pt-8 px-4">
+          <div className="flex items-center gap-3 text-gray-400 font-semibold">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#384D6C] rounded-full animate-spin" />
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-    <Head/>
-    <div className='uth1'>
-       
-      <Toaster/>
-        <body >
-      <h1 className="heading8">We Want to Hear from You - Teacher Feedback</h1>
-      <form onSubmit={handleSubmit}>
-        
-        <label htmlFor="grade1" className="tt1">Select Grade</label>
-        <input id="dropdown1" name="dropdown" value={grade}
-        style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '200px', border: '1px solid #000000', borderRadius: '10px' }}  readOnly/>
-        
-        <label htmlFor="teacher1" className="tt2">Select Teacher</label>
-        <select id="dropdown3" name="dropdown" style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '270px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} required value={teacher} onChange={(a)=> setTeacher(a.target.value)}>
-         
-         <option value=""></option>
-         {teacherid.map((teacher, index) => (
-           <option key={index} value={teacher.name}>{teacher.name}</option>
-         ))}
-         </select>
-        
-        <label htmlFor="subject1" className="tt3">Select Subject</label>
-        <input id="dropdown1" name="dropdown" value={subject} style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '350px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }}   readOnly/>
-        
-        <label htmlFor="studentID1" className="tt4">Student ID</label>
-        <input type="text" name="sSID" pattern="^SD\d{3}$" title="Please enter 'SD001'" value={sid} style={{ boxSizing: 'border-box', position: 'absolute', width: '351px', height: '53px', left: '636px', top: '440px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} readOnly/>
-        <label htmlFor="feedback1" className="tt5">Feedback</label>
-        <textarea
-          id="feedback1"
-          style={{ boxSizing: 'border-box', position: 'absolute', width: '914px', height: '238px', left: '465px', top: '625px', background: '#FFFFFF', border: '1px solid #000000' }}
-          value={tfeedback}
-          onChange={(a)=> setTFeedback(a.target.value)}
-        ></textarea>
-        <button
-          id="tfeed1"
-          className="tfet"
-          style={{ position: 'absolute', width: '334px', height: '77px', left: '1045px', background: '#6C9DE2', borderRadius: '20px' }}
-        >
-          Submit
-        </button>
-      </form>
-    </body>
+    <div>
+      <Head />
+      <Toaster />
+
+      <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+        <h2 className="text-xl font-bold text-[#063a67] mb-6">Update Teacher Feedback</h2>
+
+        <div className="bg-white border-2 border-gray-100 rounded-[20px] shadow-md p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grade</label>
+                <input value={grade} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Select Teacher</label>
+                <select
+                  required
+                  value={teacher}
+                  onChange={e => setTeacher(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-200 bg-white rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C]"
+                >
+                  <option value="">-- Select --</option>
+                  {teacherList.map((t, i) => (
+                    <option key={t._id || i} value={t.name}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
+                <input value={subject} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Student ID</label>
+                <input value={sid} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Your Feedback</label>
+              <textarea
+                required
+                rows={5}
+                value={tfeedback}
+                onChange={e => setTFeedback(e.target.value)}
+                className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C] resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={() => navigate('/MyFeedbacks')}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-6 py-3 rounded-xl text-sm transition-all">
+                Cancel
+              </button>
+              <button type="submit" disabled={loading}
+                className="bg-[#384D6C] hover:bg-[#283952] disabled:opacity-60 text-white font-bold px-8 py-3 rounded-xl transition-all">
+                {loading ? 'Updating...' : 'Update Feedback'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </div>
-    </>
-  )
+  );
 }
 
-export default UpdateTeacherF
+export default UpdateTeacherF;

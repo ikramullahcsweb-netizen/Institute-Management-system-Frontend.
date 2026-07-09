@@ -4,7 +4,7 @@ import axios from "axios";
 import Header from "../Header/Header";
 import { toast } from 'react-toastify';
 
-const BASE_URL = 'http://localhost:3000';
+const BASE_URL = '';
 
 const statusBadge = (status) => {
   const base = "px-3 py-0.5 rounded-full text-xs font-medium border";
@@ -24,13 +24,13 @@ function AdditionalClasses() {
     const fetchData = async () => {
       try {
         // 1. Pehle Teacher profile fetch karein
-        const profileRes = await axios.get(`${BASE_URL}/teacherprofile`);
+        const profileRes = await axios.get(`${BASE_URL}/api/v1/teacherprofile`, { withCredentials: true });
         const tname = profileRes.data.name;
 
         // 2. Promise.all ka istemal: dono network calls parallel (ek saath) hongi
         const [additionalRes, schedulesRes] = await Promise.all([
-          axios.get(`${BASE_URL}/requestedadditionalclasses/additionalclasses`),
-          axios.get(`${BASE_URL}/requestedadditionalclasses/schedules`)
+          axios.get(`${BASE_URL}/api/classes/requestedadditionalclasses/additionalclasses`, { withCredentials: true }),
+          axios.get(`${BASE_URL}/api/classes/requestedadditionalclasses/schedules`, { withCredentials: true })
         ]);
 
         // 3. Teacher ke naam se data filter aur state update

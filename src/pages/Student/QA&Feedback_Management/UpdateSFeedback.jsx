@@ -1,168 +1,129 @@
-import React, { useEffect, useState } from 'react'
-import './SFeedback.css';
-import axios from 'axios';
-import {Link, useParams,useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
+import API from '../../../api';
 
 function UpdateSFeedback() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  const {id} = useParams();
-  const [grade, setGrade] = useState();
-  const [sfeedbacks, setSFeedbacks] = useState();
-  const [date, setDate] = useState();
-  const navigator = useNavigate();
-  
+  const [grade, setGrade]         = useState('');
+  const [sfeedbacks, setSFeedbacks] = useState('');
+  const [date, setDate]           = useState('');
+  const [loading, setLoading]     = useState(false);
+  const [fetching, setFetching]   = useState(true);
 
-  useEffect(() =>{
-    //get service feedback
-    axios.get('http://localhost:5000/getSFeedback/' + id)
-    .then((res) =>{
-      setGrade(res.data.grade);
-      setSFeedbacks(res.data.feedback);
-      setDate(res.data.date);
-    })
-    .catch((err) => console.error(err));
+  // Fetch existing feedback
+  useEffect(() => {
+    API.get(`/api/feedback/getSFeedback/${id}`)
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setGrade(d.grade       || '');
+        setSFeedbacks(d.feedback || '');
+        // ISO date string se sirf date part lo
+        setDate(d.date ? d.date.split('T')[0] : '');
+      })
+      .catch(err => console.error(err))
+      .finally(() => setFetching(false));
+  }, [id]);
 
-  },[]);
-
-  const update = (a) =>{
-    a.preventDefault();
-  
-  axios.put('http://localhost:5000/updateSFeedback/'+ id, {grade:grade,sfeedbacks:sfeedbacks,date:date})
-    .then(res =>{
-      
-      
-    })
-    .catch(err => console.error(err));
-
-  }
-
-  const handleSubmit = (a) => {
-    a.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
     Swal.fire({
-      title: "Submit ",
-      text: "Are you sure you want to proceed ?",
-      icon: "question",
+      title: 'Update Feedback?',
+      icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, proceed!",
-      cancelButtonText: "Cancel",
-      
-    }).then((result) => {
+      confirmButtonColor: '#384D6C',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Update!',
+    }).then(async result => {
       if (result.isConfirmed) {
-        update(a); // Call submit function if result is confirmed
-        Swal.fire({
-          title: "Updated",
-          icon: "success",
-        });
-        handleClick2();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          icon: "error",
-        });
-        // Call submit function even if result is canceled
+        setLoading(true);
+        try {
+          await API.put(`/api/feedback/updateSFeedback/${id}`, {
+            grade, sfeedbacks, date
+          });
+          toast.success('Service feedback updated!');
+          setTimeout(() => navigate('/MyFeedbacks'), 1500);
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Update failed');
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
-  
-  
 
-  const handleClick2 = () => {
-    toast.loading('Processing...', {
-      style: {
-        background: 'black', // Customize the background color
-        color: '#ffffff', // Customize the text color
-        borderRadius: '10px', // Add border radius
-        border: '2px solid #ffffff', // Add border
-      },
-    });
-  
-    setTimeout(() => {
-      toast.dismiss();
-      setTimeout(() => {
-        toast.success('Updated!', {
-          style: {
-            background: '#28a745', // Green background color
-            color: '#ffffff', // White text color
-            borderRadius: '10px', // Rounded corners
-            border: '2px solid #ffffff', // White border
-          },
-          duration: 2000, // Display duration in milliseconds (3 seconds)
-          iconTheme: {
-            primary: '#ffffff', // White icon color
-            secondary: '#28a745', // Green icon color
-          },
-        });
-        setTimeout(() => {
-          navigator('/MyFeedbacks');
-        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
-      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
-    }, 5000); // Wait for 5 seconds before dismissing loading toast
-  };
-
-  useEffect(()=>{
-    axios.get('/studentprofile')
-    .then((res)=>{         
-      setGrade(res.data.grade);       
-    })
-    .catch((err)=>{
-        console.log(err);
-    })
-  },[])
-
-  /*const[questions,setQuestions] = useState([]);
-  useEffect(() => {
-    axios.get('http://localhost:5000/MyQuestions')
-    .then((res) =>{
-      setQuestions(res.data);
-    })
-    .catch((err) => console.error(err));
-  },[]);*/
+  if (fetching) {
+    return (
+      <div><Head />
+        <div className="md:ml-[270px] pt-8 px-4">
+          <div className="flex items-center gap-3 text-gray-400 font-semibold">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#384D6C] rounded-full animate-spin" />
+            Loading...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>   
-    <Head/>
-    <h1 className="heading9">We Want to Hear from You - Update Service Feedback</h1>
-    <div  >
-       
-       <Toaster/>
-    
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="grade" className="tt6">Grade</label>
-      <input id="dropdown1" name="dropdown" value={grade}
-        style={{ position: 'absolute', width: '920px', height: '40px', left: '436px', top: '268px', border: '1px solid #000000', borderRadius: '10px' }}  readOnly/>
+    <div>
+      <Head />
+      <Toaster />
 
-      <label htmlFor="feedback" className="tt7">Feedback</label>
-      <textarea
-        id="feedback"
-        style={{ boxSizing: 'border-box', position: 'absolute', width: '920px', height: '178px', left: '436px', top: '445px', background: '#FFFFFF', border: '1px solid #000000' }}
-        value={sfeedbacks}
-        onChange={(a)=> setSFeedbacks(a.target.value)}
-      ></textarea>
-      <label htmlFor="date" className="tt8">Date</label>
-      <input
-        id="date"
-        style={{ boxSizing: 'border-box', position: 'absolute', width: '920px', height: '53px', left: '436px', top: '755px', background: '#FFFFFF', border: '1px solid #000000' }}
-        type="text"
-        value={date}
-        onChange={(a)=> setDate(a.target.value)}
-      />
-      <button
-        id="sfeed"
-        className="sfet"
-        
-        style={{ position: 'absolute', width: '334px', height: '77px', left: '1020px', top: '850px', background: '#384D6C', borderRadius: '12px' }}
-      >
-        Submit
-      </button>
-    </form>
-  </div>
-  </>
-  )
+      <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+        <h2 className="text-xl font-bold text-[#063a67] mb-6">Update Service Feedback</h2>
+
+        <div className="bg-white border-2 border-gray-100 rounded-[20px] shadow-md p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grade</label>
+                <input value={grade} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Date</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Your Feedback</label>
+              <textarea
+                required
+                rows={5}
+                value={sfeedbacks}
+                onChange={e => setSFeedbacks(e.target.value)}
+                className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C] resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button type="button" onClick={() => navigate('/MyFeedbacks')}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-6 py-3 rounded-xl text-sm transition-all">
+                Cancel
+              </button>
+              <button type="submit" disabled={loading}
+                className="bg-[#384D6C] hover:bg-[#283952] disabled:opacity-60 text-white font-bold px-8 py-3 rounded-xl transition-all">
+                {loading ? 'Updating...' : 'Update Feedback'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default UpdateSFeedback
+export default UpdateSFeedback;

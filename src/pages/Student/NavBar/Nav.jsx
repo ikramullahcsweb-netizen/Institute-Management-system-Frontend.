@@ -21,23 +21,22 @@ function Nav() {
     window.location.href = '/';
   };
 
-  // Modern UI Core Routing Map with Vector Glyph Bindings
   const navigationLinks = [
-    { label: "Dashboard", path: "/studentdashboard", icon: <FaThLarge /> },
-    { label: "My Classes", path: "/test", icon: <FaChalkboardTeacher /> },
-    { label: "Payment", path: "/viewonline", icon: <FaCreditCard /> },
-    { label: "TimeTable", path: "/studenttimetable", icon: <FaCalendarAlt /> },
-    { label: "Attendance", path: "/AttendStudent", icon: <FaUserCheck /> },
-    { label: "Q&A", path: "/question", icon: <FaComments /> },
-    { label: "Feedbacks", path: "/Feedback", icon: <FaRegCommentDots /> },
-    { label: "Profile", path: "/studentprofile", icon: <FaUserCircle /> },
-    { label: "Wallet", path: "/Wallet", icon: <FaWallet /> },
+    { label: "Dashboard",  path: "/StudentDashboard", icon: <FaThLarge /> },
+    { label: "My Classes", path: "/Test",             icon: <FaChalkboardTeacher /> },
+    { label: "Payment",    path: "/ViewOnline",       icon: <FaCreditCard /> },
+    { label: "TimeTable",  path: "/StudentTimetable", icon: <FaCalendarAlt /> },
+    { label: "Attendance", path: "/AttendStudent",    icon: <FaUserCheck /> },
+    { label: "Q&A",        path: "/AddQuestion",      icon: <FaComments /> },
+    { label: "Feedbacks",  path: "/Feedback",         icon: <FaRegCommentDots /> },
+    { label: "Profile",    path: "/StudentProfile",   icon: <FaUserCircle /> },
+    { label: "Wallet",     path: "/Wallet",           icon: <FaWallet /> },
   ];
 
   return (
     <>
       {/* Fixed Vertical Sidebar Scaffold Structure */}
-      <div className="hidden md:flex fixed top-0 left-0 h-full w-[270px] bg-white border-r-2 border-slate-200 flex-col justify-between p-5 z-50 shadow-xs">
+      <div className="hidden md:flex fixed top-0 left-0 h-full w-[270px] bg-white border-r-2 border-slate-200 flex-col justify-between p-3 z-50 shadow-xs">
         
         {/* Top Control Links Array Tree Section */}
         <div className="w-full space-y-6">
@@ -72,7 +71,7 @@ function Nav() {
           <button
             type="button"
             onClick={handleDeletetoken}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-slate-800 hover:bg-red-700 text-white rounded-xl border-2 border-slate-950 shadow-sm transition-all duration-200 group"
+            className="w-full flex items-center justify-between gap-3 px-4 py-3.4 bg-slate-800 hover:bg-red-700 text-white rounded-xl border-2 border-slate-950 shadow-sm transition-all duration-200 group"
           >
             <div className="flex items-center gap-3">
               <FaSignOutAlt className="text-slate-400 group-hover:text-white transition-colors text-lg" />

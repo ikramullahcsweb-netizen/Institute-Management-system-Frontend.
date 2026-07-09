@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Style.css';
-import axios from 'axios';
+import API from '../../../api';
 import { Link, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
@@ -34,10 +34,11 @@ function CreateNotice() {
     }, []);
 
     useEffect(() => {
-        axios.get('/teacherprofile')
+        API.get('/api/v1/teacherprofile')
             .then((res) => {
-                setTeacher_id(res.data.teid);
-                setsubject_name(res.data.subject);
+                const d = res.data?.data || res.data;
+                setTeacher_id(d.teid);
+                setsubject_name(d.subject);
             })
             .catch((err) => {
                 console.log(err);
@@ -46,13 +47,13 @@ function CreateNotice() {
 
     const submit = (e) => {
         e.preventDefault();
-        axios.post('http://localhost:3000/createnotice', {
-            topic: topic,
-            date: date,
-            description: description,
-            teacher_id: teacher_id,
-            subject_name: subject_name,
-            grade: grade
+        API.post('/api/lessons/createnotice', {
+            topic,
+            date,
+            description,
+            teacher_id,
+            subject_name,
+            grade
         }).then(res => {
             console.log('Success');
             Swal.fire(
@@ -60,7 +61,7 @@ function CreateNotice() {
                 'Your notice has been successfully created.',
                 'success'
             ).then(() => {
-                navigate('/myclasses');
+                navigate('/MyClassess');
             });
         }).catch(err => {
             console.error(err);
@@ -117,7 +118,7 @@ function CreateNotice() {
 
                     <div className="button-group">
                         <button className="addNoticebutton" type="submit">Create</button>
-                        <Link to="/myclasses" className="cancelbutton_CN">Cancel</Link>
+                        <Link to="/MyClassess" className="cancelbutton_CN">Cancel</Link>
                     </div>
                 </form>
             </div>

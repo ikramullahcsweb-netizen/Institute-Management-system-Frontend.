@@ -8,7 +8,7 @@ import logo from "../../../assets/step2 scientist logo.jpeg";
 
 function MgPayment() {
   const navigate = useNavigate();
-  const API_URL = "http://localhost:3000";
+  const API_URL = ""; // Vite proxy use karta hai
 
   const [formData, setFormData] = useState({
     itnumber: "",
@@ -44,7 +44,7 @@ function MgPayment() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.post(`${API_URL}/getcash`, formData);
+          await axios.post(`${API_URL}/api/payments/createcash`, formData, { withCredentials: true });
           toast.success("Payment Added Successfully!");
           setTimeout(() => navigate("/managerfinancial"), 1500);
         } catch (err) {

@@ -1,497 +1,18 @@
-
-// // // import React, { useState } from 'react';
-// // // import { toast } from 'react-hot-toast';
-// // // import { useNavigate, Link } from 'react-router-dom';
-// // // import loginimg from './photos/teacherlogin.png';
-// // // import logofull from '../../../../src/assets/step2 scientist logo.jpeg';
-// // // import logo from '../../../../src/assets/crop logo.jfif';
-
-// // // function TeacherLogin() {
-// // //   const navigate = useNavigate();
-// // //   const [data, setData] = useState({
-// // //     username: '',
-// // //     password: ''
-// // //   });
-
-// // //   const loginTeacher = (e) => {
-// // //     e.preventDefault();
-// // //     const { username, password } = data;
-
-// // //     if (!username || !password) {
-// // //       toast.error("Please fill in all fields");
-// // //       return;
-// // //     }
-
-// // //     // Logic: InshaAllah yahan aap apni API call implement karenge
-// // //     toast.success("Logged in successfully!");
-// // //     navigate('/teacherprofile');
-// // //   };
-
-// // //   return (
-// // //     <main className="w-full h-screen flex font-sans overflow-hidden bg-slate-50">
-      
-// // //       {/* LEFT PANEL: Sticky Image with Text Overlay */}
-// // //       <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
-// // //         <img 
-// // //           src={loginimg} 
-// // //           alt='Teacher Login' 
-// // //           className="w-full h-full object-cover" 
-// // //         />
-        
-// // //         <div className="absolute inset-0 bg-black/30 z-10" />
-
-// // //         <div className="absolute bottom-12 left-12 z-20 text-white">
-// // //           <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">
-// // //             Academic Operations Center
-// // //           </p>
-// // //           <h2 className="text-3xl font-black uppercase leading-tight max-w-[400px]">
-// // //             Step 2 Scientist Teacher Portal
-// // //           </h2>
-// // //         </div>
-// // //       </div>
-
-// // //       {/* RIGHT PANEL: Scrollable Form Section */}
-// // //       <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
-        
-// // //         <form 
-// // //           onSubmit={loginTeacher} 
-// // //           className="w-full max-w-[500px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
-// // //         >
-// // //           {/* Header with Both Logos */}
-// // //           <div className="flex flex-col items-center text-center mb-8">
-// // //             <div className="flex gap-2 items-center justify-center mb-6">
-// // //               <img src={logofull} alt="Logo Full" className="h-16 w-auto object-contain" />
-// // //               <img src={logo} alt="Logo" className="h-14 w-auto object-contain" />
-// // //             </div>
-// // //             <h1 className="text-xl font-bold text-slate-800">Welcome Back</h1>
-// // //             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
-// // //               Sign in to access your dashboard
-// // //             </p>
-// // //           </div>
-
-// // //           {/* Form Fields */}
-// // //           <div className="space-y-5 w-full">
-// // //             <div>
-// // //               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
-// // //               <input 
-// // //                 type="text" 
-// // //                 placeholder="Enter your username" 
-// // //                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-// // //                 value={data.username} 
-// // //                 onChange={(e) => setData({...data, username: e.target.value})}
-// // //                 required
-// // //               />
-// // //             </div>
-
-// // //             <div>
-// // //               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-// // //               <input 
-// // //                 type="password" 
-// // //                 placeholder="Enter your password" 
-// // //                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-// // //                 value={data.password} 
-// // //                 onChange={(e) => setData({...data, password: e.target.value})}
-// // //                 required
-// // //               />
-// // //             </div>
-
-// // //             <div className="flex justify-end">
-// // //               <Link 
-// // //                 to='/teacherforgetpassword' 
-// // //                 className="text-[10px] text-slate-500 hover:text-[#10a1b6] font-bold uppercase tracking-widest underline"
-// // //               >
-// // //                 Forgot Password?
-// // //               </Link>
-// // //             </div>
-
-// // //             <button 
-// // //               type="submit" 
-// // //               className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2"
-// // //             >
-// // //               Login
-// // //             </button>
-
-// // //             <div className="text-center pt-2">
-// // //               <Link 
-// // //                 to='/adminmanagerlogin' 
-// // //                 className="text-[10px] text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest transition-all"
-// // //               >
-// // //                 Manager/Admin Login
-// // //               </Link>
-// // //             </div>
-// // //           </div>
-// // //         </form>
-// // //       </div>
-// // //     </main>
-// // //   );
-// // // }
-
-// // // export default TeacherLogin;
-
-
-
-
-// // import React, { useState } from 'react';
-// // import { toast } from 'react-hot-toast';
-// // import { useNavigate, Link } from 'react-router-dom';
-// // import loginimg from './photos/teacherlogin.png';
-// // import logofull from '../../../../src/assets/step2 scientist logo.jpeg';
-// // import logo from '../../../../src/assets/crop logo.jfif';
-
-// // function TeacherLogin() {
-// //   const navigate = useNavigate();
-// //   const [data, setData] = useState({
-// //     username: '', // Note: Backend par agar email field hai, toh api call mein isey adjust kiya ja sakta hai
-// //     password: ''
-// //   });
-// //   const [isLoading, setIsLoading] = useState(false);
-
-// //   const loginTeacher = (e) => {
-// //     e.preventDefault();
-// //     const { username, password } = data;
-
-// //     if (!username || !password) {
-// //       toast.error("Please fill in all fields");
-// //       return;
-// //     }
-
-// //     setIsLoading(true);
-// //     const toastId = toast.loading("Authenticating...");
-
-// //     fetch('http://localhost:3000/api/auth/teacherlogin', {
-// //       method: 'POST',
-// //       headers: { 'Content-Type': 'application/json' },
-// //       credentials: 'include',
-// //       body: JSON.stringify({ username, password })
-// //     })
-// //       .then((response) => {
-// //         if (!response.ok) {
-// //           return response.json().then((errData) => {
-// //             throw new Error(errData?.message || 'Login failed');
-// //           });
-// //         }
-// //         return response.json();
-// //       })
-// //       .then((resData) => {
-// //         setIsLoading(false);
-// //         toast.success(resData?.message || "Logged in successfully!", { id: toastId });
-        
-// //         // Agar aap login session token local storage mein save karte hain, toh yahan save karein:
-// //         // localStorage.setItem('token', resData?.token);
-
-// //         setTimeout(() => navigate('/teacherprofile'), 1000);
-// //       })
-// //       .catch((error) => {
-// //         setIsLoading(false);
-// //         toast.error(error.message || "Invalid credentials. Please try again.", { id: toastId });
-// //       });
-// //   };
-
-// //   return (
-// //     <main className="w-full h-screen flex font-sans overflow-hidden bg-slate-50">
-      
-// //       {/* LEFT PANEL: Sticky Image with Text Overlay */}
-// //       <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
-// //         <img 
-// //           src={loginimg} 
-// //           alt='Teacher Login' 
-// //           className="w-full h-full object-cover" 
-// //         />
-        
-// //         <div className="absolute inset-0 bg-black/30 z-10" />
-
-// //         <div className="absolute bottom-12 left-12 z-20 text-white">
-// //           <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">
-// //             Academic Operations Center
-// //           </p>
-// //           <h2 className="text-3xl font-black uppercase leading-tight max-w-[400px]">
-// //             Step 2 Scientist Teacher Portal
-// //           </h2>
-// //         </div>
-// //       </div>
-
-// //       {/* RIGHT PANEL: Scrollable Form Section */}
-// //       <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
-        
-// //         <form 
-// //           onSubmit={loginTeacher} 
-// //           className="w-full max-w-[500px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
-// //         >
-// //           {/* Header with Both Logos */}
-// //           <div className="flex flex-col items-center text-center mb-8">
-// //             <div className="flex gap-2 items-center justify-center mb-6">
-// //               <img src={logofull} alt="Logo Full" className="h-16 w-auto object-contain" />
-// //               <img src={logo} alt="Logo" className="h-14 w-auto object-contain" />
-// //             </div>
-// //             <h1 className="text-xl font-bold text-slate-800">Welcome Back</h1>
-// //             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
-// //               Sign in to access your dashboard
-// //             </p>
-// //           </div>
-
-// //           {/* Form Fields */}
-// //           <div className="space-y-5 w-full">
-// //             <div>
-// //               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Username</label>
-// //               <input 
-// //                 type="text" 
-// //                 placeholder="Enter your username" 
-// //                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-// //                 value={data.username} 
-// //                 onChange={(e) => setData({...data, username: e.target.value})}
-// //                 disabled={isLoading}
-// //                 required
-// //               />
-// //             </div>
-
-// //             <div>
-// //               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-// //               <input 
-// //                 type="password" 
-// //                 placeholder="Enter your password" 
-// //                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-// //                 value={data.password} 
-// //                 onChange={(e) => setData({...data, password: e.target.value})}
-// //                 disabled={isLoading}
-// //                 required
-// //               />
-// //             </div>
-
-// //             <div className="flex justify-end">
-// //               <Link 
-// //                 to='/teacherforgetpassword' 
-// //                 className="text-[10px] text-slate-500 hover:text-[#10a1b6] font-bold uppercase tracking-widest underline"
-// //               >
-// //                 Forgot Password?
-// //               </Link>
-// //             </div>
-
-// //             <button 
-// //               type="submit" 
-// //               disabled={isLoading}
-// //               className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2 disabled:bg-slate-400 disabled:cursor-not-allowed"
-// //             >
-// //               {isLoading ? "Logging in..." : "Login"}
-// //             </button>
-
-// //             <div className="text-center pt-2">
-// //               <Link 
-// //                 to='/adminmanagerlogin' 
-// //                 className="text-[10px] text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest transition-all"
-// //               >
-// //                 Manager/Admin Login
-// //               </Link>
-// //             </div>
-// //           </div>
-// //         </form>
-// //       </div>
-// //     </main>
-// //   );
-// // }
-
-// // export default TeacherLogin;
-
-// import React, { useState } from 'react';
-// import { Link, useNavigate } from 'react-router-dom';
-// import loginimg from './photos/teacherlogin.png';
-// import logofull from '../../../../src/assets/step2 scientist logo.jpeg';
-// import logo from '../../../../src/assets/crop logo.jfif';
-
-// function TeacherLogin() {
-//   const navigate = useNavigate();
-
-//   const [formData, setFormData] = useState({
-//     email_address: '', // Backend matching parameter
-//     password: ''
-//   });
-
-//   const [msg, setMsg] = useState("");
-//   const [isError, setIsError] = useState(false);
-
-//   const handleChange = (e) => {
-//     setFormData({ ...formData, [e.target.name]: e.target.value });
-//   };
-
-//   const loginTeacher = (e) => {
-//     e.preventDefault();
-//     const { email_address, password } = formData;
-
-//     if (!email_address || !password) {
-//       setIsError(true);
-//       setMsg("Please fill in all fields.");
-//       return;
-//     }
-
-//     setMsg("Checking credentials...");
-//     setIsError(false);
-
-//     // API hits your universal authentication route
-//     fetch('http://localhost:3000/api/v1/teacherlogin', {
-//       method: 'POST',
-//       headers: { 'Content-Type': 'application/json' },
-//       credentials: 'include',
-//       body: JSON.stringify({
-//         email_address: email_address.toLowerCase(),
-//         password: password
-//       })
-//     })
-//       .then((response) => {
-//         if (!response.ok) {
-//           return response.json().then((data) => {
-//             throw new Error(data?.message || 'Login verification failed');
-//           });
-//         }
-//         return response.json();
-//       })
-//       .then((data) => {
-//         setIsError(false);
-//         setMsg(data?.message || "Logged in successfully!");
-        
-//         // Save access tokens to localStorage if needed
-//         if (data?.data?.accessToken) {
-//           localStorage.setItem('accessToken', data.data.accessToken);
-//         }
-
-//         setFormData({
-//           email_address: '',
-//           password: ''
-//         });
-//         setTimeout(() => navigate('/teacherprofile'), 1500);
-//       })
-//       .catch((error) => {
-//         setIsError(true);
-//         setMsg(error.message || "Invalid email or password. Please try again.");
-//       });
-//   };
-
-//   return (
-//     <main className="w-full h-screen flex font-sans overflow-hidden bg-slate-50">
-      
-//       {/* LEFT PANEL: Sticky Image with Text Overlay */}
-//       <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
-//         <img 
-//           src={loginimg} 
-//           alt='Teacher Login' 
-//           className="w-full h-full object-cover" 
-//         />
-//         <div className="absolute inset-0 bg-black/30 z-10" />
-//         <div className="absolute bottom-12 left-12 z-20 text-white">
-//           <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">
-//             Academic Operations Center
-//           </p>
-//           <h2 className="text-3xl font-black uppercase leading-tight max-w-[400px]">
-//             Step 2 Scientist Teacher Portal
-//           </h2>
-//         </div>
-//       </div>
-
-//       {/* RIGHT PANEL: Scrollable Form Section */}
-//       <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
-        
-//         <form 
-//           onSubmit={loginTeacher} 
-//           className="w-full max-w-[500px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
-//         >
-//           {/* Header with Both Logos */}
-//           <div className="flex flex-col items-center text-center mb-8">
-//             <div className="flex gap-2 items-center justify-center mb-6">
-//               <img src={logofull} alt="Logo Full" className="h-16 w-auto object-contain" />
-//               <img src={logo} alt="Logo" className="h-14 w-auto object-contain" />
-//             </div>
-//             <h1 className="text-xl font-bold text-slate-800">Welcome Back</h1>
-//             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
-//               Sign in to access your dashboard
-//             </p>
-//           </div>
-
-//           {/* Dynamic Message Box - Matches TeacherRegister exactly */}
-//           {msg && (
-//             <div className={`p-4 rounded-xl text-xs font-bold uppercase tracking-wide text-center border-2 mb-4 ${
-//               isError 
-//                 ? 'bg-red-50 text-red-600 border-red-200' 
-//                 : 'bg-emerald-50 text-emerald-600 border-emerald-200'
-//             }`}>
-//               {msg}
-//             </div>
-//           )}
-
-//           {/* Form Fields */}
-//           <div className="space-y-5 w-full">
-//             <div>
-//               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email Address</label>
-//               <input 
-//                 type="email" 
-//                 name="email_address"
-//                 placeholder="Enter your registered email" 
-//                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all text-slate-900 font-bold" 
-//                 value={formData.email_address} 
-//                 onChange={handleChange}
-//                 required
-//               />
-//             </div>
-
-//             <div>
-//               <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-//               <input 
-//                 type="password" 
-//                 name="password"
-//                 placeholder="Enter your password" 
-//                 className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all text-slate-900 font-bold" 
-//                 value={formData.password} 
-//                 onChange={handleChange}
-//                 required
-//               />
-//             </div>
-
-//             <div className="flex justify-end">
-//               <Link 
-//                 to='/teacherforgetpassword' 
-//                 className="text-[10px] text-slate-500 hover:text-[#10a1b6] font-bold uppercase tracking-widest underline"
-//               >
-//                 Forgot Password?
-//               </Link>
-//             </div>
-
-//             <button 
-//               type="submit" 
-//               className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2"
-//             >
-//               Login
-//             </button>
-
-//             <div className="text-center pt-2">
-//               <Link 
-//                 to='/adminmanagerlogin' 
-//                 className="text-[10px] text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest transition-all"
-//               >
-//                 Manager/Admin Login
-//               </Link>
-//             </div>
-//           </div>
-//         </form>
-//       </div>
-//     </main>
-//   );
-// }
-
-// export default TeacherLogin;
-
 import React, { useState } from 'react';
-import { toast } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
-
-// Assets (Ensure paths are correct)
-import loginimg from './photos/teacherlogin.png';
-import logofull from '../../../../src/assets/step2 scientist logo.jpeg';
-import logo from '../../../../src/assets/crop logo.jfif';
+import { toast } from 'react-hot-toast';
+import { Mail, Lock, Eye, EyeOff, GraduationCap } from 'lucide-react';
+import API, { clearPreviousSession } from '../../../api';
+import logo from '../../../assets/crop logo.jfif';
 
 function TeacherLogin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: '',
+    email_address: '',
     password: ''
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -499,131 +20,178 @@ function TeacherLogin() {
 
   const loginTeacher = async (e) => {
     e.preventDefault();
-    const { email, password } = formData;
+    const { email_address, password } = formData;
 
-    if (!email || !password) {
-      toast.error("Please fill in all fields.");
+    if (!email_address || !password) {
+      toast.error('Please enter your email and password.');
       return;
     }
 
-    setIsLoading(true);
-    const toastId = toast.loading("Authenticating...");
+    setLoading(true);
+    const toastId = toast.loading('Logging into teacher portal...');
 
     try {
-      const response = await fetch('http://localhost:3000/api/v1/teacherlogin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ 
-          email: email.toLowerCase(), // Backend 'email' mang raha hai
-          password 
-        })
-      });
+      // Pehle purana session clear karo — role leakage rok'ta hai
+      clearPreviousSession();
 
-      const resData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(resData?.message || 'Login failed');
-      }
-
-      setIsLoading(false);
-      toast.success(resData?.message || "Logged in successfully!", { id: toastId });
-
-      // Agar token save karna ho
-      if (resData?.data?.accessToken) {
-        localStorage.setItem('accessToken', resData.data.accessToken);
-      }
-
-      setTimeout(() => navigate('/teacherprofile'), 1000);
+      // Backend email field expect karta hai
+      const response = await API.post('/api/v1/teacherlogin', { email: email_address, password });
       
+      const responseData = response.data?.data;
+      const loggedInUser = responseData?.teacher;
+      
+      toast.success('Welcome back, Educator!', { id: toastId });
+      
+      localStorage.setItem('token', responseData.accessToken);
+      localStorage.setItem('userRole', 'teacher');
+      localStorage.setItem('user', JSON.stringify(loggedInUser || {}));
+
+      setFormData({ email_address: '', password: '' });
+      
+      setTimeout(() => {
+        navigate('/TeacherTimetable'); // Navigate to a dashboard or timetable
+      }, 1200);
     } catch (error) {
-      setIsLoading(false);
-      toast.error(error.message || "Invalid credentials. Please try again.", { id: toastId });
+      console.error('Teacher Login Failure:', error);
+      toast.error(error.message || 'Credentials authentication failed.', { id: toastId });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="w-full h-screen flex font-sans overflow-hidden bg-slate-50">
-      
-      {/* LEFT PANEL */}
-      <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
-        <img src={loginimg} alt='Teacher Login' className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/30 z-10" />
-        <div className="absolute bottom-12 left-12 z-20 text-white">
-          <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">Academic Operations Center</p>
-          <h2 className="text-3xl font-black uppercase leading-tight max-w-[400px]">Step 2 Scientist Teacher Portal</h2>
+    <main className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4">
+      <div className="w-full max-w-[950px] min-h-[550px] bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-100">
+        
+        {/* Left Side: Gradient Branding Hero */}
+        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-brand-green via-brand-teal to-brand-blue p-12 text-white text-center relative">
+          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px]"></div>
+          
+          <div className="relative z-10 space-y-6 max-w-[320px]">
+            <img 
+              src={logo} 
+              alt="Step 2 Scientist" 
+              className="w-24 h-24 mx-auto rounded-full shadow-lg border-2 border-white/30" 
+            />
+            <div>
+              <h2 className="text-2xl font-black tracking-tight">Step 2 Scientist</h2>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mt-2">
+                Educator Control Console
+              </p>
+            </div>
+            <div className="pt-6 border-t border-white/20">
+              <p className="text-xs text-white/70 leading-relaxed">
+                Management of student attendance, notice distribution boards, and academic timetables.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* RIGHT PANEL */}
-      <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
-        <form 
-          onSubmit={loginTeacher} 
-          className="w-full max-w-[500px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
-        >
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="flex gap-2 items-center justify-center mb-6">
-              <img src={logofull} alt="Logo Full" className="h-16 w-auto object-contain" />
-              <img src={logo} alt="Logo" className="h-14 w-auto object-contain" />
+        {/* Right Side: Authentication Panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16 bg-white">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-green/10 border border-brand-green/20 rounded-full text-[11px] font-bold text-brand-green tracking-wide uppercase mb-3">
+              <GraduationCap className="w-3.5 h-3.5" />
+              Teacher Authentication
             </div>
-            <h1 className="text-xl font-bold text-slate-800">Welcome Back</h1>
-            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-2">
-              Sign in to access your dashboard
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Educator Portal</h1>
+            <p className="text-sm text-slate-400 mt-1">Provide your credentials to manage courses and schedule rosters</p>
+          </div>
+
+          <form onSubmit={loginTeacher} className="space-y-4">
+            
+            {/* Input Module: Email */}
+            <div className="space-y-1">
+              <label htmlFor="email_address" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Teacher Email Address
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type="email" 
+                  id="email_address" 
+                  name="email_address" 
+                  placeholder="teacher@gmail.com" 
+                  value={formData.email_address}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+                />
+              </div>
+            </div>
+
+            {/* Input Module: Password */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <label htmlFor="password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Access Password
+                </label>
+                <Link 
+                  to="/TeacherForgetPassword" 
+                  className="text-xs font-bold text-brand-blue hover:text-brand-teal no-underline transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green bg-slate-50/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Action */}
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 bg-brand-green text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-green/30 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Authorizing Educator Session...' : 'Sign In to Portal'}
+              </button>
+            </div>
+
+          </form>
+
+          {/* Registration Redirect */}
+          <div className="mt-6 text-center">
+            <p className="text-xs text-slate-500">
+              New teacher?{' '}
+              <Link to="/TeacherRegister" className="font-bold text-brand-blue hover:text-brand-teal transition-colors no-underline">
+                Create teacher profile here
+              </Link>
             </p>
-          </div>
-
-          <div className="space-y-5 w-full">
-            {/* Email Field */}
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Email</label>
-              <input 
-                type="email" 
-                name="email"
-                placeholder="Enter your email" 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-                value={formData.email} 
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Password</label>
-              <input 
-                type="password" 
-                name="password"
-                placeholder="Enter your password" 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-                value={formData.password} 
-                onChange={handleChange}
-                disabled={isLoading}
-                required
-              />
-            </div>
-
-            <div className="flex justify-end">
-              <Link to='/teacherforgetpassword' className="text-[10px] text-slate-500 hover:text-[#10a1b6] font-bold uppercase tracking-widest underline">
-                Forgot Password?
-              </Link>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] mt-2 disabled:opacity-50"
-            >
-              {isLoading ? "Logging in..." : "Login"}
-            </button>
-
-            <div className="text-center pt-2">
-              <Link to='/adminmanagerlogin' className="text-[10px] text-slate-400 hover:text-slate-600 font-bold uppercase tracking-widest transition-all">
-                Manager/Admin Login
+            <div className="mt-4">
+              <Link to="/login" className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors no-underline">
+                ← Go back to user gateways
               </Link>
             </div>
           </div>
-        </form>
+        </div>
+
       </div>
     </main>
   );

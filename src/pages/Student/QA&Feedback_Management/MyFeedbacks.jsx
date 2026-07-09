@@ -1,132 +1,264 @@
-import React, { useEffect, useState } from 'react'
-import './MyFeedbacks.css';
-import {Link } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import Head from '../Header/Header';
+import API from '../../../api';
 
 function MyFeedbacks() {
+  const [tfeedbacks, setTFeedbacks] = useState([]);
+  const [sfeedbacks, setSFeedbacks] = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState('');
 
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        // Step 1: student ka stdid lo
+        const profileRes  = await API.get('/api/v1/studentprofile');
+        const profileData = profileRes.data?.data || profileRes.data;
+        const myStdid     = profileData?.stdid || '';
 
-    const[tfeedbacks,setTFeedbacks] = useState([]);
-    const[sfeedbacks,setSFeedbacks] = useState([]);
-    const [name, setName] = useState();
+        // Step 2: teacher aur service feedbacks parallel fetch karo
+        const [tfRes, sfRes] = await Promise.all([
+          API.get('/api/feedback/MyTFeedbacks'),
+          API.get('/api/feedback/MySFeedbacks'),
+        ]);
 
-    useEffect(()=>{
-      axios.get('/studentprofile')
-      .then((res)=>{
-          setName(res.data.stdid);            
-      })
-      .catch((err)=>{
-          console.log(err);
-      })
-    },[]) 
+        // Backend ApiResponse: { statusCode, data: [...], message }
+        const allTF = Array.isArray(tfRes.data?.data)
+          ? tfRes.data.data
+          : Array.isArray(tfRes.data)
+          ? tfRes.data
+          : [];
 
-    useEffect(() => {
-    
-      if (name) {
-      axios.get('http://localhost:5000/MyTFeedbacks')
-        .then(res => {
-          const FilterTFeedback = res.data.filter(question =>
-            question.sid === name
-          );
-          setTFeedbacks(FilterTFeedback);
-        })
-        .catch(err => console.error(err));
+        const allSF = Array.isArray(sfRes.data?.data)
+          ? sfRes.data.data
+          : Array.isArray(sfRes.data)
+          ? sfRes.data
+          : [];
+
+        // Step 3: apne feedbacks filter karo
+        setTFeedbacks(myStdid ? allTF.filter(f => f.sid === myStdid) : allTF);
+        setSFeedbacks(myStdid ? allSF.filter(f => f.sid === myStdid) : allSF);
+
+      } catch (err) {
+        console.error('MyFeedbacks error:', err);
+        setError(err.response?.data?.message || 'Could not load feedbacks');
+      } finally {
+        setLoading(false);
       }
-    }, [name]);
+    };
 
-    useEffect(() => {
-    
-      if (name) {
-      axios.get('http://localhost:5000/MySFeedbacks')
-        .then(res => {
-          const FilterSFeedback = res.data.filter(question =>
-            question.sid === name
-          );
-          setSFeedbacks(FilterSFeedback);
-        })
-        .catch(err => console.error(err));
+    fetchAll();
+  }, []);
+
+  const deleteTF = (id) => {
+    Swal.fire({
+      title: 'Delete feedback?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Delete',
+    }).then(async r => {
+      if (r.isConfirmed) {
+        try {
+          await API.delete(`/api/feedback/deleteTFeedback/${id}`);
+          setTFeedbacks(p => p.filter(f => f._id !== id));
+          Swal.fire('Deleted!', '', 'success');
+        } catch (err) {
+          Swal.fire('Error', err.response?.data?.message || 'Delete failed', 'error');
+        }
       }
-    }, [name]);   
+    });
+  };
 
-    const handleDeleteT = (id) =>{
-      axios.delete('http://localhost:5000/deleteTFeedback/' + id)
-      .then((res) => {
-        window.location.reload();
-      })
-      .catch((err) => console.error(err));
-    }
+  const deleteSF = (id) => {
+    Swal.fire({
+      title: 'Delete feedback?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Delete',
+    }).then(async r => {
+      if (r.isConfirmed) {
+        try {
+          await API.delete(`/api/feedback/deleteSFeedback/${id}`);
+          setSFeedbacks(p => p.filter(f => f._id !== id));
+          Swal.fire('Deleted!', '', 'success');
+        } catch (err) {
+          Swal.fire('Error', err.response?.data?.message || 'Delete failed', 'error');
+        }
+      }
+    });
+  };
 
-    const handleDeleteS = (id) =>{
-      axios.delete('http://localhost:5000/deleteSFeedback/' + id)
-      .then((res) => {
-        window.location.reload();
-      })
-      .catch((err) => console.error(err));
-    }
-    
-    //align th sFeedback 
-    const totalTeacherFeedbackHeight = tfeedbacks.length * 225 + (tfeedbacks.length - 1) * 20;
+  // ── Loading ──
+  if (loading) {
+    return (
+      <div>
+        <Head />
+        <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+          <div className="flex items-center gap-3 text-gray-400 font-semibold">
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-[#384D6C] rounded-full animate-spin" />
+            Loading your feedbacks...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
+  // ── Error ──
+  if (error) {
+    return (
+      <div>
+        <Head />
+        <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+          <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 font-semibold text-sm">
+            ⚠️ {error}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-       <Head/>
-  <h2 className="heading110">We Want to Hear from You - My Feedbacks</h2>
+      <Head />
 
-  <ul style={{ position: 'absolute',listStyleType: 'none'}}>
-    {tfeedbacks.map((tfeedback, index) => (
-      <li key={index} style={{ position: 'relative', marginBottom: '20px' }}>
-        <label className="ttv9">Teacher<br/>Feedback</label>
-        <ul style={{ listStyleType: 'none' ,boxSizing: 'border-box', position: 'absolute', height: '165px', width: '830px', left: '537px', top: '100px', background: '#FFFFFF',borderRadius:'10px', border: '2px solid #000000' }}>
-          <li><strong>Grade:</strong> {tfeedback.grade}</li><br/>
-          <li><strong>Subject:</strong> {tfeedback.subject}</li><br/>
-          <li><strong>Teacher:</strong> {tfeedback.teacher}</li><br/>
-          <li><strong>Feedback:</strong> {tfeedback.feedback}</li><br/>
-        </ul>
+      <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+        <h2 className="text-xl font-black text-[#063a67] mb-6">My Feedbacks</h2>
 
-      
-        
-        <Link to={`/UpdateTeacherF/${tfeedback._id}`} style={{ textDecoration: 'none', color: '#FFFFFF' }}>
-          <button id="mfe1" className="mfet1" style={{ position: 'absolute', width: '140px', left:'1020px',height: '40px', top: '280px', background: '#136845', borderRadius: '20px' }}>
-            Edit
-          </button>
-        </Link>
+        {/* ── Teacher Feedbacks ── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-black uppercase tracking-widest text-[#384D6C] bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+              Teacher Feedbacks
+              <span className="ml-2 bg-blue-100 text-blue-700 rounded-full px-1.5 py-0.5 text-[10px]">
+                {tfeedbacks.length}
+              </span>
+            </h3>
+            <Link to="/TFeedback">
+              <button className="bg-[#384D6C] hover:bg-[#283952] text-white text-xs font-bold px-3 py-2 rounded-xl transition-all">
+                + Add
+              </button>
+            </Link>
+          </div>
 
+          {tfeedbacks.length === 0 ? (
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-[20px] p-6 text-center">
+              <p className="text-gray-400 font-semibold text-sm">No teacher feedbacks yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {tfeedbacks.map((f, i) => (
+                <div key={f._id || i} className="bg-white border-2 border-gray-100 rounded-[20px] shadow-sm p-5 hover:border-gray-200 transition-all">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {f.grade && (
+                      <span className="text-[11px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-100">Grade: {f.grade}</span>
+                    )}
+                    {f.subject && (
+                      <span className="text-[11px] bg-purple-50 text-purple-700 font-bold px-2 py-0.5 rounded border border-purple-100">{f.subject}</span>
+                    )}
+                    {f.teacher && (
+                      <span className="text-[11px] bg-slate-50 text-slate-600 font-bold px-2 py-0.5 rounded border border-slate-200">{f.teacher}</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black uppercase text-gray-400 tracking-wider">Feedback</span>
+                    <p className="text-gray-800 font-medium text-sm mt-1 leading-relaxed">{f.feedback}</p>
+                  </div>
+                  <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                    <Link to={`/UpdateTeacherF/${f._id}`}>
+                      <button className="bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-600 hover:text-white text-xs font-bold px-4 py-2 rounded-lg transition-all">
+                        Edit
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => deleteTF(f._id)}
+                      className="bg-red-50 border border-red-200 text-red-600 hover:bg-red-600 hover:text-white text-xs font-bold px-4 py-2 rounded-lg transition-all"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
+        {/* ── Service Feedbacks ── */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-black uppercase tracking-widest text-[#384D6C] bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+              Service Feedbacks
+              <span className="ml-2 bg-green-100 text-green-700 rounded-full px-1.5 py-0.5 text-[10px]">
+                {sfeedbacks.length}
+              </span>
+            </h3>
+            <Link to="/SFeedback">
+              <button className="bg-[#384D6C] hover:bg-[#283952] text-white text-xs font-bold px-3 py-2 rounded-xl transition-all">
+                + Add
+              </button>
+            </Link>
+          </div>
 
-        <button id="mfd" onClick={(a) => handleDeleteT(tfeedback._id)} className="mfdt1" style={{ position: 'absolute', width: '140px', height: '40px', left: '1188px', top: '280px', background: '#4a2032', borderRadius: '20px' }}>
-          Delete
-        </button><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-      </li>
-    ))}
-  </ul>
-  
-  <ul style={{ listStyleType: 'none',position: 'absolute', top: `${totalTeacherFeedbackHeight }px`,marginTop: '35%'}}>
-  {sfeedbacks.map((sfeedback, index) => (
-    <li key={index} style={{ marginBottom: '20px', position: 'relative' }}>
-      <label className="ttv9" style={{  top: '45px' }}>Service<br/>Feedback</label>
-      <ul style={{listStyleType: 'none', boxSizing: 'border-box', position: 'absolute', height: '163px', width: '830px', left: '537px', background: '#FFFFFF',borderRadius:'10px', border: '2px solid #000000', padding: '10px' }}>
-        <li><strong>Grade:</strong> {sfeedback.grade}</li><br/><br/>
-        <li><strong>Feedback:</strong> {sfeedback.feedback}</li><br/><br/>
-      </ul>
-      
-      <Link to={`/UpdateSFeedback/${sfeedback._id}`} style={{ textDecoration: 'none', color: '#FFFFFF' }}>
-      <button id="mfe" className="mfet1" style={{ position: 'absolute',left:'1020px', width: '140px', height: '40px',  background: '#136845', borderRadius: '20px' ,top: '65%' }}>
-        Edit
-      </button></Link>
+          {sfeedbacks.length === 0 ? (
+            <div className="bg-white border-2 border-dashed border-gray-200 rounded-[20px] p-6 text-center">
+              <p className="text-gray-400 font-semibold text-sm">No service feedbacks yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {sfeedbacks.map((f, i) => (
+                <div key={f._id || i} className="bg-white border-2 border-gray-100 rounded-[20px] shadow-sm p-5 hover:border-gray-200 transition-all">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {f.grade && (
+                      <span className="text-[11px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded border border-blue-100">Grade: {f.grade}</span>
+                    )}
+                    {f.date && (
+                      <span className="text-[11px] bg-gray-50 text-gray-500 font-bold px-2 py-0.5 rounded border border-gray-200">
+                        {new Date(f.date).toLocaleDateString()}
+                      </span>
+                    )}
+                    {f.reply && (
+                      <span className="text-[11px] bg-green-50 text-green-700 font-bold px-2 py-0.5 rounded border border-green-200">
+                        ✓ Reply received
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-black uppercase text-gray-400 tracking-wider">Feedback</span>
+                    <p className="text-gray-800 font-medium text-sm mt-1 leading-relaxed">{f.feedback}</p>
+                  </div>
+                  {f.reply && (
+                    <div className="mt-3 pt-3 border-t border-dashed border-gray-200">
+                      <span className="text-[11px] font-black uppercase text-green-700 tracking-wider">Manager Reply</span>
+                      <p className="text-gray-700 font-medium text-sm mt-1 leading-relaxed">{f.reply}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+                    <Link to={`/UpdateSFeedback/${f._id}`}>
+                      <button className="bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-600 hover:text-white text-xs font-bold px-4 py-2 rounded-lg transition-all">
+                        Edit
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => deleteSF(f._id)}
+                      className="bg-red-50 border border-red-200 text-red-600 hover:bg-red-600 hover:text-white text-xs font-bold px-4 py-2 rounded-lg transition-all"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      <button id="mfd"  onClick={(a) => handleDeleteS(sfeedback._id)} className="mfdt1" style={{ position: 'absolute', width: '140px', height: '40px', left: '1188px', background: '#4a2032', borderRadius: '20px',top: '65%' }}>
-        Delete
-      </button><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-    </li>
-  ))}
-</ul>
-  
-
-    
-  </div>
-  )
+      </div>
+    </div>
+  );
 }
 
-export default MyFeedbacks
+export default MyFeedbacks;

@@ -8,7 +8,7 @@ function UpdateClasses() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const API_URL = "http://localhost:3000";
+  const API_URL = ""; // Vite proxy use karta hai
 
   const [formData, setFormData] = useState({
     teacher: '',
@@ -24,7 +24,7 @@ function UpdateClasses() {
   useEffect(() => {
     const fetchClassData = async () => {
       try {
-        const res = await axios.get(`${API_URL}/getclass/${id}`);
+        const res = await axios.get(`${API_URL}/api/classes/getClass/${id}`, { withCredentials: true });
         setFormData(res.data);
       } catch (err) {
         console.error("Error fetching class data:", err);

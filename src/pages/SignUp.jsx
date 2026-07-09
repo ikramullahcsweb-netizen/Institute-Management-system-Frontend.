@@ -1,217 +1,232 @@
-
-import React from "react";
-import loginbg from "../../src/assets/office image.avif"; 
-import { useNavigate } from "react-router-dom";
-import google from "../../src/assets/google-pic.svg";
-import { useState } from "react";
-import { useGoogleLogin } from "@react-oauth/google";
-import API from "../api";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { User, Mail, Lock, Phone, UserCheck, Eye, EyeOff } from 'lucide-react';
+import API from '../api';
+import logo from '../assets/crop logo.jfif';
+import loginbg from '../assets/office image.avif';
 
 const SignUp = () => {
   const navigate = useNavigate();
   
-  // 💡 State mein saare fields ko define kar diya taaki input controlled rahe aur data sahi jaye
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
-    email_address: "",
-    mobile_no: "",
-    password: "",
-    role: "" 
+    first_name: '',
+    last_name: '',
+    email_address: '',
+    mobile_no: '',
+    password: '',
+    role: '',
+    SecAnswer: ''
   });
   
   const [showPassword, setShowPassword] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [isError, setIsError] = useState(false); // Error color dynamic karne ke liye
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 📝 NORMAL SIGNUP
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 🚨 Validation: Agar role select nahi kiya toh rok dein
     if (!formData.role) {
-      setIsError(true);
-      setMsg("Please select a Role / Room before signing up!");
+      toast.error('Please select a Profile Role before signing up!');
       return;
     }
 
-    setMsg("Creating account...");
-    setIsError(false);
+    if (!formData.password || formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long!');
+      return;
+    }
 
-    // 🔥 FIXED: Custom API wrapper se automatic base URL picked up ho jayega
-    API.post("/api/auth/register", formData)
-      .then((response) => {
-        setIsError(false);
-        setMsg("Account Created Successfully!");
-        console.log("API Success:", response.data);
-        setTimeout(() => navigate("/login"), 2000);
-      })
-      .catch((error) => {
-        console.error("Chain Error:", error);
-        setIsError(true);
-        setMsg(error.response?.data?.message || "Network error: Server unreachable or Email already exists.");
-      });
-  };
+    setLoading(true);
+    const toastId = toast.loading('Creating your account, please wait...');
 
-  // 🌐 GOOGLE SIGNUP
-  const signUpWithGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      // 🚨 Validation: Google auth se pehle bhi role select hona lazmi hai
-      if (!formData.role) {
-        setIsError(true);
-        setMsg("Please select a Role / Room FIRST, then click Login with Google!");
-        return;
-      }
-
-      setMsg("Processing Google Authentication...");
-      setIsError(false);
+    try {
+      // Connecting to backend register route
+      const response = await API.post('/api/auth/register', formData);
       
-      // 🔥 FIXED: Fetch hata kar Axios-based API call lagayi jo session allow karegi
-      API.post("/api/auth/google-auth", { 
-        token: tokenResponse.access_token,
-        role: formData.role // Role database mein bhej rahe hain
-      })
-        .then((res) => {
-          setIsError(false);
-          setMsg("Google Authentication Successful!");
-          console.log("Google Auth Success:", res.data);
-          setTimeout(() => navigate("/"), 1500);
-        })
-        .catch((err) => {
-          console.error("Google Fetch Error:", err);
-          setIsError(true);
-          setMsg(err.response?.data?.message || "Google Authentication failed on server.");
-        });
-    },
-    onError: () => {
-      setIsError(true);
-      setMsg("Google Authentication aborted.");
-    },
-  });
+      toast.success('Registration successful! Welcome aboard.', { id: toastId });
+      console.log('API Registration Success:', response.data);
+      
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
+    } catch (error) {
+      console.error('API Registration Error:', error);
+      toast.error(error.message || 'Registration failed. Check if email already exists.', { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <section 
-      className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat p-4"
+      className="min-h-screen w-full flex items-center justify-center bg-cover bg-center bg-no-repeat p-4 relative pt-20"
       style={{ backgroundImage: `url(${loginbg})` }}
     >
-      <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-2xl mt-15">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sign Up</h1>
-            <p className="text-sm font-medium text-gray-500 mt-1">Sign up your account</p>
-          </div>
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm z-0"></div>
 
-          {/* First Name & Last Name */}
-          <div className="flex gap-3">
+      <div className="w-full max-w-md bg-white/95 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/20 z-10 my-10">
+        
+        {/* Header Layout */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <img
+            src={logo}
+            alt="Step 2 Scientist Logo"
+            className="h-16 w-16 object-contain rounded-full shadow-md mb-4 border border-slate-100"
+          />
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Create Account</h2>
+          <p className="text-slate-500 text-xs mt-1">Fill in the fields to sign up to Step 2 Scientist</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          
+          {/* First & Last Name */}
+          <div className="flex gap-4">
             <div className="relative w-1/2">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <User className="h-4 w-4 text-slate-400" />
+              </span>
               <input
                 name="first_name"
                 type="text"
                 placeholder="First Name"
+                value={formData.first_name}
                 onChange={handleChange}
                 required
-                className="w-full h-10 px-3 text-stone-800 border border-gray-300 text-sm rounded-md focus:outline-none focus:border-blue-500"
+                className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
             </div>
             <div className="relative w-1/2">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                <User className="h-4 w-4 text-slate-400" />
+              </span>
               <input
                 name="last_name"
                 type="text"
                 placeholder="Last Name"
+                value={formData.last_name}
                 onChange={handleChange}
-                className="w-full h-10 px-3 text-stone-800 border border-gray-300 text-sm rounded-md focus:outline-none focus:border-blue-500"
+                required
+                className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
               />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
             </div>
           </div>
 
           {/* Email Address */}
           <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Mail className="h-4 w-4 text-slate-400" />
+            </span>
             <input
               name="email_address"
               type="email"
               placeholder="Email Address"
+              value={formData.email_address}
               onChange={handleChange}
               required
-              className="w-full h-10 pl-3 pr-10 text-stone-800 border border-gray-300 text-sm rounded-md focus:outline-none focus:border-blue-500"
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
           </div>
 
           {/* Phone Number */}
           <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-              <span className="text-stone-400 text-sm font-medium">+202</span>
-            </div>
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Phone className="h-4 w-4 text-slate-400" />
+            </span>
             <input
               name="mobile_no"
               type="tel"
-              placeholder="Phone Number"
+              placeholder="Mobile Number"
+              value={formData.mobile_no}
               onChange={handleChange}
-              className="w-full h-10 pl-14 pr-10 text-stone-800 border border-gray-300 text-sm rounded-md focus:outline-none focus:border-blue-500"
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
             />
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-              </svg>
-            </div>
           </div>
 
-          {/* Role/Room Selection */}
+          {/* Password */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <Lock className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Choose Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength={6}
+              className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+              ) : (
+                <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+              )}
+            </button>
+          </div>
+
+          {/* Secret Answer / Security Question */}
+          <div className="relative w-full">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+              <UserCheck className="h-4 w-4 text-slate-400" />
+            </span>
+            <input
+              name="SecAnswer"
+              type="text"
+              placeholder="Security Answer (e.g., your favorite color)"
+              value={formData.SecAnswer}
+              onChange={handleChange}
+              required
+              className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50"
+            />
+          </div>
+
+          {/* Profile Role Selector */}
           <div className="relative w-full">
             <select
               name="role"
               value={formData.role}
               onChange={handleChange}
               required
-              className="w-full h-10 px-3 text-stone-800 border border-gray-300 text-sm rounded-md focus:outline-none focus:border-blue-500"
+              className="w-full h-11 px-3 text-slate-800 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-blue focus:ring-1 focus:ring-brand-blue bg-slate-50/50 appearance-none"
             >
-              <option value="">Select Role</option>
-              <option value="student">Student</option>
-              <option value="teacher">Teacher</option>
+              <option value="" className="text-slate-400">Select Profile Role</option>
+              <option value="manager">Manager</option>
               <option value="admin">Admin</option>
             </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Action */}
           <button 
             type="submit" 
-            className="w-full h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-sm transition-all"
+            disabled={loading}
+            className="w-full h-11 bg-gradient-to-r from-brand-blue via-brand-teal to-brand-green text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-blue/30 active:scale-[0.98] disabled:opacity-50 mt-6 cursor-pointer"
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
 
-          {/* Google Button */}
-          <button 
-            type="button"
-            onClick={() => signUpWithGoogle()}
-            className="w-full h-10 border border-gray-300 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition-all text-sm font-medium text-gray-700"
-          >
-            <img src={google} alt="google" className="w-5 h-5" />
-            Sign Up with Google
-          </button>
-
-          <p className="text-center text-xs text-gray-500">
-            Already have an account? <span className="text-blue-600 cursor-pointer" onClick={() => navigate("/login")}>Login</span>
-          </p>
         </form>
+
+        <p className="text-center text-xs text-slate-500 mt-6">
+          Already have an account?{' '}
+          <Link to="/login" className="text-brand-blue font-bold hover:text-brand-teal transition-colors no-underline">
+            Login
+          </Link>
+        </p>
       </div>
     </section>
   );

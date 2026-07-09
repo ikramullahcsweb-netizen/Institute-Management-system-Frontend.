@@ -23,7 +23,7 @@ function ManagerUpdateTimetable() {
     const navigate = useNavigate();
 
     useEffect(() => {
-      axios.get(`http://localhost:3000/Manager/Timetable/${id}`)
+      axios.get(`/api/timetable/Manager/Timetable/${id}`)
           .then((res) => {
               setFormData(res.data);
           })
@@ -68,7 +68,7 @@ function ManagerUpdateTimetable() {
 
   const update = (e) => {
       e.preventDefault();
-      axios.put(`http://localhost:3000/Manager/UpdateT/${id}`, formData)
+      axios.put(`/api/timetable/Manager/UpdateT/${id}`, formData)
           .then(res => {
               navigate('/Manager/Timetable');
           })

@@ -14,7 +14,7 @@ function ManagerTimetable() {
   const [selectedMonth, setSelectedMonth] = useState("");
 
   // Base URL for API
-  const API_BASE = "http://localhost:3000";
+  const API_BASE = ""; // Vite proxy use karta hai
 
   // Data Fetching
   useEffect(() => {
@@ -22,7 +22,7 @@ function ManagerTimetable() {
   }, []);
 
   const fetchTimetableData = () => {
-    axios.get(`${API_BASE}/Manager/Timetable`)
+    axios.get(`${API_BASE}/api/timetable/Manager/Timetable`)
       .then((res) => {
         setTimetableData(res.data);
       })
@@ -49,7 +49,7 @@ function ManagerTimetable() {
 
   // Delete Operation
   const handleDelete = (id) => {
-    axios.delete(`${API_BASE}/Manager/DeleteTimetable/${id}`)
+    axios.delete(`${API_BASE}/api/timetable/Manager/DeleteTimetable/${id}`)
       .then(() => {
         setTimetableData((prev) => prev.filter((item) => item._id !== id));
       })
@@ -97,7 +97,7 @@ function ManagerTimetable() {
   return (
     <div className="w-full bg-slate-50 min-h-screen pb-16 font-sans">
       <Head />
-      <div className="w-full max-w-[1400px] mx-auto px-4 mt-8">
+      <div className="w-full max-w-[1400px] mx-auto px-4 mt-8 md:ml-[280px]">
         
         {/* Header Section */}
         <div className="border-b-2 border-gray-200 pb-4 mb-6 flex justify-between items-center">

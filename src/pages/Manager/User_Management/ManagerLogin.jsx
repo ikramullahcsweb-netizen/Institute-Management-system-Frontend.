@@ -1,124 +1,192 @@
-
-import React, { useState } from "react";
-import axios from "axios";
-import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
-
-// Assets
-import logo from '../../../../src/assets/crop logo.jfif';
-import loginimg from "./photos/managerlogin.png";
-import logofull from "../../../assets/step2 scientist logo.jpeg";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
+import { Mail, Lock, Eye, EyeOff, Briefcase } from 'lucide-react';
+import API, { clearPreviousSession } from '../../../api';
+import logo from '../../../assets/crop logo.jfif';
 
 function ManagerLogin() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({ 
-    email_address: "", 
-    password: "" 
+  const [formData, setFormData] = useState({
+    email_address: '',
+    password: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const loginManager = async (e) => {
     e.preventDefault();
+    const { email_address, password } = formData;
 
-    if (!data.email_address || !data.password) {
-      toast.error("Please fill in all mandatory credentials.");
+    if (!email_address || !password) {
+      toast.error('Please enter your email and password.');
       return;
     }
 
     setLoading(true);
+    const toastId = toast.loading('Connecting to manager portal...');
 
     try {
-      const res = await axios.post("http://localhost:3000/api/auth/managerlogin", {
-        email_address: data.email_address,
-        password: data.password,
-      }, {
-        withCredentials: true
-      });
+      // Pehle purana session clear karo — role leakage rokta hai
+      clearPreviousSession();
 
-      if (res.data) {
-        toast.success("Login Successful!");
-        navigate("/managerdashboard");
+      const response = await API.post('/api/auth/managerlogin', { email_address, password });
+      
+      const responseData = response.data?.data;
+      const loggedInUser = responseData?.user;
+
+      if (loggedInUser && loggedInUser.role === 'manager') {
+        toast.success('Manager validation success! Opening workspace.', { id: toastId });
+        
+        localStorage.setItem('token', responseData.accessToken);
+        localStorage.setItem('userRole', loggedInUser.role);
+        localStorage.setItem('user', JSON.stringify(loggedInUser));
+
+        setFormData({ email_address: '', password: '' });
+        
+        setTimeout(() => {
+          navigate('/managerdashboard');
+        }, 1200);
+      } else {
+        toast.error(`Access Denied: Logged in profile role is ${loggedInUser?.role || 'unidentified'}`, { id: toastId });
       }
     } catch (error) {
-      console.error("Login Error:", error);
-      const errMsg = error.response?.data?.message || "Login failed. Check server connection.";
-      toast.error(errMsg);
+      console.error('Manager Login Failure:', error);
+      toast.error(error.message || 'Credentials authentication failed.', { id: toastId });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="w-full h-screen flex overflow-hidden font-sans bg-slate-50">
-      
-      {/* LEFT PANEL */}
-      <div className="hidden md:block w-1/2 h-screen sticky top-0 bg-[#13293d] relative">
-        <img src={loginimg} alt="Manager" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/30 z-10" />
-        <div className="absolute bottom-12 left-12 z-20 text-white">
-          <p className="text-xs font-bold tracking-widest uppercase text-[#10a1b6] mb-2">Academic Operations Center</p>
-          <h2 className="text-3xl font-black uppercase leading-tight">Step 2 Scientist Administrative Gateway</h2>
-        </div>
-      </div>
-
-      {/* RIGHT PANEL */}
-      <div className="flex-1 h-screen overflow-y-auto flex items-center justify-center p-6">
+    <main className="min-h-screen bg-slate-50 font-sans flex items-center justify-center p-4">
+      <div className="w-full max-w-[950px] min-h-[550px] bg-white rounded-3xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2 border border-slate-100">
         
-        {/* Form element mein onSubmit={loginManager} lagaya hai */}
-        <form 
-          onSubmit={loginManager} 
-          className="w-full max-w-[400px] bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100"
-        >
-          {/* Header */}
-          <div className="flex flex-col items-center text-center mb-8">
-            <div className="flex gap-2 mb-6">
-              <img src={logofull} alt="Logo" className="h-16 w-auto object-contain" />
-              <img src={logo} alt="Logo" className="h-16 w-auto object-contain" />
+        {/* Left Side: Gradient Branding Hero */}
+        <div className="hidden md:flex flex-col justify-center items-center bg-gradient-to-br from-brand-teal via-brand-blue to-brand-green p-12 text-white text-center relative">
+          <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[1px]"></div>
+          
+          <div className="relative z-10 space-y-6 max-w-[320px]">
+            <img 
+              src={logo} 
+              alt="Step 2 Scientist" 
+              className="w-24 h-24 mx-auto rounded-full shadow-lg border-2 border-white/30" 
+            />
+            <div>
+              <h2 className="text-2xl font-black tracking-tight">Step 2 Scientist</h2>
+              <p className="text-white/80 text-xs font-semibold uppercase tracking-wider mt-2">
+                Operations Management Node
+              </p>
             </div>
-            <h1 className="text-2xl font-bold text-slate-800">Welcome Back, Scientist</h1>
-            <p className="text-[10px] text-[#10a1b6] font-bold uppercase tracking-widest mt-2">Manager Session Portal</p>
+            <div className="pt-6 border-t border-white/20">
+              <p className="text-xs text-white/70 leading-relaxed">
+                Management console workspace access. Authorized manager credential verification required.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Authentication Panel */}
+        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16 bg-white">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-teal/10 border border-brand-teal/20 rounded-full text-[11px] font-bold text-brand-teal tracking-wide uppercase mb-3">
+              <Briefcase className="w-3.5 h-3.5" />
+              Manager Authentication
+            </div>
+            <h1 className="text-3xl font-black text-slate-800 tracking-tight">Manager Portal</h1>
+            <p className="text-sm text-slate-400 mt-1">Provide your credentials to access operations dashboard</p>
           </div>
 
-          {/* Fields */}
-          <div className="space-y-5 w-full">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Operator Email</label>
-              <input 
-                type="email" 
-                placeholder="Enter manager email" 
-                autoComplete="email"
-                value={data.email_address} 
-                onChange={(e) => setData({ ...data, email_address: e.target.value })} 
-                required 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-1.5 ml-1">
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Access Key</label>
-                <a href="/managerforgetpassword" className="text-[10px] font-bold text-[#10a1b6] hover:underline">Forgot?</a>
+          <form onSubmit={loginManager} className="space-y-4">
+            
+            {/* Input Module: Email */}
+            <div className="space-y-1">
+              <label htmlFor="email_address" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Manager Email Address
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Mail className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type="email" 
+                  id="email_address" 
+                  name="email_address" 
+                  placeholder="manager@step2scientist.com" 
+                  value={formData.email_address}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-3 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal bg-slate-50/50"
+                />
               </div>
-              <input 
-                type="password" 
-                placeholder="Enter password" 
-                autoComplete="current-password"
-                value={data.password} 
-                onChange={(e) => setData({ ...data, password: e.target.value })} 
-                required 
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-[#10a1b6] transition-all" 
-              />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading} 
-              className="w-full bg-slate-800 hover:bg-[#10a1b6] text-white font-bold text-xs uppercase tracking-widest py-4 rounded-xl transition-all shadow-md active:scale-[0.98] disabled:opacity-50 mt-2"
-            >
-              {loading ? "Authenticating..." : "Authenticate & Access Dashboard"}
-            </button>
+            {/* Input Module: Password */}
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <label htmlFor="password" className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                  Access Password
+                </label>
+                <Link 
+                  to="/managerforgetpassword" 
+                  className="text-xs font-bold text-brand-teal hover:text-brand-blue no-underline transition-colors"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                  <Lock className="h-4 w-4 text-slate-400" />
+                </span>
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  id="password" 
+                  name="password" 
+                  placeholder="••••••••" 
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  className="w-full h-11 pl-9 pr-10 text-slate-800 placeholder-slate-400 border border-slate-200 text-sm rounded-xl focus:outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal bg-slate-50/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-slate-400 hover:text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Action */}
+            <div className="pt-4">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full h-11 bg-brand-teal text-white font-bold rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-teal/30 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              >
+                {loading ? 'Validating Manager Account...' : 'Sign In to Workspace'}
+              </button>
+            </div>
+
+          </form>
+
+          {/* Go Back Link */}
+          <div className="mt-6 text-center">
+            <Link to="/login" className="text-xs font-semibold text-slate-400 hover:text-slate-600 transition-colors no-underline">
+              ← Go back to user gateways
+            </Link>
           </div>
-        </form>
+        </div>
+
       </div>
     </main>
   );

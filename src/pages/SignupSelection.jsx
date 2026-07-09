@@ -1,78 +1,123 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import loginimg from '../assets/girl-liptop.jpg';
+import { Shield, Briefcase, GraduationCap, User } from 'lucide-react';
 import logofull from '../assets/step2 scientist logo.jpeg';
 import logo from '../assets/crop logo.jfif';
 
 function SignupSelection() {
-  return (
-    <main className="w-full  bg-slate-50 flex items-start justify-center p-4 mt-20 mb-5  font-sans ">
-      <div className="w-full max-w-[1000px] bg-white border-2 border-slate-200 rounded-[24px] shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-2 items-center ">
+  const roles = [
+    {
+      name: 'Admin',
+      path: '/adminsignup',
+      description: 'System root control & configurations',
+      icon: Shield,
+      color: 'hover:border-brand-blue hover:text-brand-blue group-hover:bg-brand-blue/10',
+      iconColor: 'text-brand-blue',
+      bgColor: 'bg-brand-blue/10',
+      shadow: 'hover:shadow-brand-blue/20',
+    },
+    {
+      name: 'Manager',
+      path: '/managersignup',
+      description: 'Operations, finance & approvals',
+      icon: Briefcase,
+      color: 'hover:border-brand-teal hover:text-brand-teal group-hover:bg-brand-teal/10',
+      iconColor: 'text-brand-teal',
+      bgColor: 'bg-brand-teal/10',
+      shadow: 'hover:shadow-brand-teal/20',
+    },
+    {
+      name: 'Teacher',
+      path: '/teacherregister',
+      description: 'Timetables, notices & lesson uploads',
+      icon: GraduationCap,
+      color: 'hover:border-brand-green hover:text-brand-green group-hover:bg-brand-green/10',
+      iconColor: 'text-brand-green',
+      bgColor: 'bg-brand-green/10',
+      shadow: 'hover:shadow-brand-green/20',
+    },
+    {
+      name: 'Student',
+      path: '/studentregister',
+      description: 'Study materials, attendance & wallet',
+      icon: User,
+      color: 'hover:border-brand-teal hover:text-brand-teal group-hover:bg-brand-teal/10',
+      iconColor: 'text-brand-teal',
+      bgColor: 'bg-brand-teal/10',
+      shadow: 'hover:shadow-brand-teal/20',
+    },
+  ];
 
-        <div className="w-full h-full bg-slate-100 hidden md:flex items-center justify-center p-8">
+  return (
+    <main className="w-full min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans mt-10">
+      <div className="w-full max-w-4xl bg-white border border-slate-100 rounded-3xl shadow-xl p-8 sm:p-12 flex flex-col items-center">
+        
+        {/* Logos & Header Section */}
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-6 mb-8">
           <img
-            src={loginimg}
-            alt="signup decoration panel"
-            className="w-full max-w-[400px] h-auto object-contain object-center transition-transform duration-300 hover:scale-102"
+            src={logofull}
+            alt="Step 2 Scientist Full Logo"
+            className="h-16 w-auto object-contain"
+          />
+          <div className="hidden sm:block h-10 w-px bg-slate-200"></div>
+          <img
+            src={logo}
+            alt="Step 2 Scientist Crop Logo"
+            className="h-16 w-auto object-contain rounded-full shadow-md border border-slate-100"
           />
         </div>
 
-        <div className="w-full p-8 sm:p-12 flex flex-col items-center text-center">
-          <div className="flex justify-center gap-3 items-center mb-4">
-            <img
-              src={logofull}
-              alt="Step 2 Scientist logo"
-              className="h-16 w-auto object-contain"
-            />
-            <img
-              src={logo}
-              alt="Royal Academy branding logo"
-              className="h-16 w-auto object-contain rounded-full"
-            />
-          </div>
-
-          <h1 className="text-xl font-black text-[#13293d] tracking-tight uppercase mb-8">
-            Welcome to step to scientist
+        <div className="text-center max-w-lg mb-10">
+          <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight mb-3">
+            Join Step 2 Scientist
           </h1>
+          <p className="text-slate-500 text-sm">
+            Select your professional profile category to create an account and access the academy management platform.
+          </p>
+        </div>
 
-          <div className="w-full max-w-[320px] grid grid-cols-2 gap-3">
-            <Link to="/managersignup" className="w-full">
-              <button
-                type="button"
-                className="w-full bg-[#10a1b6] hover:bg-[#0e8a9c] text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
+        {/* Roles Grid Selection */}
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {roles.map((role) => {
+            const Icon = role.icon;
+            return (
+              <Link 
+                key={role.name} 
+                to={role.path} 
+                className="group block no-underline"
               >
-                Manager
-              </button>
-            </Link>
+                <div className={`h-full border border-slate-200 rounded-2xl p-6 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${role.shadow} ${role.color.split(' ')[0]} flex flex-col items-center text-center`}>
+                  {/* Icon Wrapper */}
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-4 transition-colors duration-300 ${role.bgColor} group-hover:bg-opacity-80`}>
+                    <Icon className={`w-7 h-7 ${role.iconColor}`} />
+                  </div>
+                  
+                  {/* Title */}
+                  <h3 className="text-lg font-bold text-slate-800 group-hover:text-inherit mb-2 transition-colors">
+                    {role.name}
+                  </h3>
+                  
+                  {/* Description */}
+                  <p className="text-slate-400 text-xs leading-relaxed mt-auto">
+                    {role.description}
+                  </p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
 
-            <Link to="/adminsignup" className="w-full">
-              <button
-                type="button"
-                className="w-full bg-[#063a67] hover:bg-[#13293d] text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
-              >
-                Admin
-              </button>
+        {/* Footer Link */}
+        <div className="mt-12 text-center">
+          <p className="text-sm text-slate-500">
+            Already have an account?{' '}
+            <Link 
+              to="/login" 
+              className="font-bold text-brand-blue hover:text-brand-teal transition-colors no-underline"
+            >
+              Sign In here
             </Link>
-
-            <Link to="/teacherregister" className="w-full">
-              <button
-                type="button"
-                className="w-full bg-[#1b7a3d] hover:bg-[#155c2e] text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
-              >
-                Teacher
-              </button>
-            </Link>
-
-            <Link to="/studentregister" className="w-full">
-              <button
-                type="button"
-                className="w-full bg-[#a15c10] hover:bg-[#8a4d0e] text-white font-bold text-sm py-3.5 px-4 rounded-xl shadow-sm transition-all duration-200 uppercase tracking-wider active:scale-[0.98]"
-              >
-                Student
-              </button>
-            </Link>
-          </div>
-
+          </p>
         </div>
 
       </div>

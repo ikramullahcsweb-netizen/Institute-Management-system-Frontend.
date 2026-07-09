@@ -1,187 +1,183 @@
-import React, { useEffect, useState } from 'react'
-import './AddQuestion.css';
-import { useParams,useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
+import API from '../../../api';
 
 function UpdateQuestion() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
-  
-  const {id} = useParams();
-  const [grade, setGrade] = useState();
-  const [subject, setSubject] = useState();
-  const [teacher, setTeacher] = useState();
-  const [sid, setSid] = useState();
-  const [question, setQuestion] = useState();
-  const navigator = useNavigate();  
-  const [teacherid, setteacherid] = useState([]);
+  const [grade, setGrade]         = useState('');
+  const [subject, setSubject]     = useState('');
+  const [teacher, setTeacher]     = useState('');
+  const [sid, setSid]             = useState('');
+  const [question, setQuestion]   = useState('');
+  const [teacherList, setTeacherList] = useState([]);
+  const [loading, setLoading]     = useState(false);
+  const [fetching, setFetching]   = useState(true);
 
-  useEffect(() =>{
-    axios.get('http://localhost:5000/getQuestion/' + id)
-    .then((res) =>{
-      setGrade(res.data.grade);
-      setSubject(res.data.subject);
-      setTeacher(res.data.teacher);
-      setSid(res.data.sid);
-      setQuestion(res.data.question);
-    })
-    .catch((err) => console.error(err));
-  },[id]);
+  // Fetch existing question
+  useEffect(() => {
+    API.get(`/api/feedback/getQuestion/${id}`)
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setGrade(d.grade || '');
+        setSubject(d.subject || '');
+        setTeacher(d.teacher || '');
+        setSid(d.sid || '');
+        setQuestion(d.question || '');
+      })
+      .catch(err => console.error(err))
+      .finally(() => setFetching(false));
+  }, [id]);
 
-  const update = (a) =>{
-    a.preventDefault();
-    axios.put('http://localhost:5000/updateQuestion/'+ id, {grade:grade,subject:subject,teacher:teacher,sid:sid,question:question})
-    .then(res =>{
-      
-      
-    })
-    .catch(err => console.error(err));
+  // Fetch teacher list
+  useEffect(() => {
+    API.get('/api/v1/teacherprofileall')
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setTeacherList(Array.isArray(d) ? d : []);
+      })
+      .catch(err => console.error(err));
+  }, []);
 
-  }
+  // Auto-fill subject on teacher change
+  useEffect(() => {
+    if (teacher && teacherList.length > 0) {
+      const selected = teacherList.find(t => t.name === teacher);
+      if (selected) setSubject(selected.subject || '');
+    }
+  }, [teacher, teacherList]);
 
-  const handleSubmit = (a) => {
-    a.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
     Swal.fire({
-      title: "Submit ",
-      text: "Are you sure you want to proceed ?",
-      icon: "question",
+      title: 'Update Question?',
+      icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, proceed!",
-      cancelButtonText: "Cancel",
-      
-    }).then((result) => {
+      confirmButtonColor: '#384D6C',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Update!',
+    }).then(async result => {
       if (result.isConfirmed) {
-        update(a); // Call submit function if result is confirmed
-        Swal.fire({
-          title: "Updated",
-          icon: "success",
-        });
-        handleClick2();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          icon: "error",
-        });
-        // Call submit function even if result is canceled
+        setLoading(true);
+        try {
+          await API.put(`/api/feedback/updateQuestion/${id}`, {
+            grade, subject, teacher, sid, question
+          });
+          toast.success('Question updated!');
+          setTimeout(() => navigate('/MyQuestions'), 1500);
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Update failed');
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
-  
-  
 
-  const handleClick2 = () => {
-    toast.loading('Processing...', {
-      style: {
-        background: 'black', // Customize the background color
-        color: '#ffffff', // Customize the text color
-        borderRadius: '10px', // Add border radius
-        border: '2px solid #ffffff', // Add border
-      },
-    });
-  
-    setTimeout(() => {
-      toast.dismiss();
-      setTimeout(() => {
-        toast.success('Updated!', {
-          style: {
-            background: '#28a745', // Green background color
-            color: '#ffffff', // White text color
-            borderRadius: '10px', // Rounded corners
-            border: '2px solid #ffffff', // White border
-          },
-          duration: 2000, // Display duration in milliseconds (3 seconds)
-          iconTheme: {
-            primary: '#ffffff', // White icon color
-            secondary: '#28a745', // Green icon color
-          },
-        });
-        setTimeout(() => {
-          navigator('/MyQuestions');
-        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
-      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
-    }, 5000); // Wait for 5 seconds before dismissing loading toast
-  };
-
-  useEffect(()=>{
-    axios.get('/teacherprofileall')
-    .then((res)=>{
-        setteacherid(res.data);             
-    })
-    .catch((err)=>{
-        console.log(err);
-    })
-  },[])
-
-  useEffect(() => {
-    if (teacher) {
-      axios.get('/teacherprofileall')
-        .then(res => {
-          const selectedTeacher = res.data.find(t => t.name === teacher);
-          if (selectedTeacher) {
-            setSubject(selectedTeacher.subject);
-          }
-        })
-        .catch(err => console.error(err));
-    }
-  }, [teacher]);
-
-
-  /*const[questions,setQuestions] = useState([]);
-  useEffect(() => {
-    axios.get('http://localhost:5000/MyQuestions')
-    .then((res) =>{
-      setQuestions(res.data);
-    })
-    .catch((err) => console.error(err));
-  },[]);*/
+  if (fetching) {
+    return (
+      <div><Head />
+        <div className="md:ml-[270px] pt-8 px-4">
+          <p className="text-gray-400 font-semibold">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
     <div>
-      <Head/>
-      <text className='heading2'>Connect with your teachers - Update Your Question</text>
-    <div className='udth3'>
-      
-    <Toaster/>
-    <div  >
-      <form onSubmit={handleSubmit}>
-      
-        
-        <label htmlFor="dropdown1" className='t1'>Grade</label>
-        <input id="dropdown1" name="dropdown" value={grade}
-        style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '205px', border: '1px solid #000000', borderRadius: '10px' }}  readOnly/>
-          
-          <label htmlFor="dropdown3" className='t2'>Select Teacher</label>
-          <select id="dropdown3" name="dropdown" style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '279px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} required value={teacher} onChange={(a)=> setTeacher(a.target.value)}>
-         
-         <option value=""></option>
-         {teacherid.map((teacher, index) => (
-           <option key={index} value={teacher.name}>{teacher.name}</option>
-         ))}
-         </select>
-        
-        <label htmlFor="dropdown2" className='t3'>Subject</label>
-        <input id="dropdown1" name="dropdown" value={subject} style={{ position: 'absolute', width: '351px', height: '40px', left: '632px', top: '360px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }}   readOnly/>
-                        
-        <text className='t5'>Student ID</text>
-        <input type="text" name="sSID" pattern="^SD\d{3}$" title="Please enter 'SD001'" value={sid} style={{ boxSizing: 'border-box', position: 'absolute', width: '351px', height: '53px', left: '636px', top: '451px', background: '#FFFFFF', border: '1px solid #000000', borderRadius: '10px' }} readOnly/>
+      <Head />
+      <Toaster />
 
-        
-        <text className='t6'>Question</text>
-        <input type="text" name="sQuestion" style={{ boxSizing: 'border-box', position: 'absolute', width: '920px', height: '219px', left: '459px', top: '610px', border: '1px solid #000000', borderRadius: '10px' }} required placeholder='Enter your Question' value={question} onChange={(a)=> setQuestion(a.target.value)}/>
-        
-        <button name="qSubmit"  className="buttonbb1">Submit</button>
-      
-      </form> 
+      <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+        <h2 className="text-xl font-bold text-[#063a67] mb-6">
+          Update Question
+        </h2>
+
+        <div className="bg-white border-2 border-gray-100 rounded-[20px] shadow-md p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grade</label>
+                <input
+                  value={grade}
+                  readOnly
+                  className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Select Teacher</label>
+                <select
+                  required
+                  value={teacher}
+                  onChange={e => setTeacher(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-200 bg-white rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C]"
+                >
+                  <option value="">-- Select --</option>
+                  {teacherList.map((t, i) => (
+                    <option key={i} value={t.name}>{t.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Subject</label>
+                <input
+                  value={subject}
+                  readOnly
+                  className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Student ID</label>
+                <input
+                  value={sid}
+                  readOnly
+                  className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Question</label>
+              <textarea
+                required
+                rows={5}
+                value={question}
+                onChange={e => setQuestion(e.target.value)}
+                className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C] resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => navigate('/MyQuestions')}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold px-6 py-3 rounded-xl text-sm transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-[#384D6C] hover:bg-[#283952] disabled:opacity-60 text-white font-bold px-8 py-3 rounded-xl transition-all"
+              >
+                {loading ? 'Updating...' : 'Update Question'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
     </div>
-    </div>
-    </div>
-    </>
-  )
+  );
 }
 
-export default UpdateQuestion
+export default UpdateQuestion;

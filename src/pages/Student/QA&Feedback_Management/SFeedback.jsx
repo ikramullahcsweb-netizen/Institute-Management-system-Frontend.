@@ -1,165 +1,110 @@
-import React, { useState, useEffect } from 'react'
-import './SFeedback.css';
-import axios from 'axios';
-import {useNavigate} from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import Swal from 'sweetalert2';
 import Head from '../Header/Header';
-
+import API from '../../../api';
 
 function SFeedback() {
+  const [sid, setSid]           = useState('');
+  const [grade, setGrade]       = useState('');
+  const [sfeedback, setSFeedback] = useState('');
+  const [date]                  = useState(new Date().toISOString().split('T')[0]);
+  const [loading, setLoading]   = useState(false);
+  const navigate = useNavigate();
 
-  const[sid,setSid]=useState();
-  const [grade, setGrade] = useState();
-  const [sfeedback, setSFeedback] = useState();
-  const [date, setDate] = useState(new Date().toISOString().substr(0, 10));
-  const navigator = useNavigate();
+  // Student profile
+  useEffect(() => {
+    API.get('/api/v1/studentprofile')
+      .then(res => {
+        const d = res.data?.data || res.data;
+        setSid(d.stdid || '');
+        setGrade(d.grade || '');
+      })
+      .catch(err => console.error(err));
+  }, []);
 
-  const submit = (a) =>{
-    a.preventDefault();
-    axios.post('http://localhost:5000/createSF', {grade:grade,sid:sid,feedback:sfeedback,date:date})
-    .then(res =>{
-      console.log(res);
-      console.log( `Feedback Submitted successfully.`);
-     
-    })
-    .catch(err => console.error(err));
-
-  }
-
-  const handleSubmit = (a) => {
-    a.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
     Swal.fire({
-      title: "Submit Feedback",
-      text: "Are you sure you want to proceed ?",
-      icon: "question",
+      title: 'Submit Service Feedback?',
+      icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, proceed!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
+      confirmButtonColor: '#384D6C',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Submit!',
+    }).then(async result => {
       if (result.isConfirmed) {
-        submit(a); // Call submit function if result is confirmed
-        Swal.fire({
-          title: "Feedback Submitted",
-          icon: "success",
-        });
-        handleClick2();
-      } else {
-        Swal.fire({
-          title: "Failed",
-          icon: "error",
-        });
-        // Call submit function even if result is canceled
+        setLoading(true);
+        try {
+          await API.post('/api/feedback/createSF', {
+            grade, sid, feedback: sfeedback, date
+          });
+          toast.success('Service feedback submitted!');
+          setTimeout(() => navigate('/Feedback'), 1500);
+        } catch (err) {
+          toast.error(err.response?.data?.message || 'Submission failed');
+        } finally {
+          setLoading(false);
+        }
       }
     });
   };
-  
-  
-
-  const handleClick2 = () => {
-    toast.loading('Processing...', {
-      style: {
-        background: 'black', // Customize the background color
-        color: '#ffffff', // Customize the text color
-        borderRadius: '10px', // Add border radius
-        border: '2px solid #ffffff', // Add border
-      },
-    });
-  
-    setTimeout(() => {
-      toast.dismiss();
-      setTimeout(() => {
-        toast.success('Completed!', {
-          style: {
-            background: '#28a745', // Green background color
-            color: '#ffffff', // White text color
-            borderRadius: '10px', // Rounded corners
-            border: '2px solid #ffffff', // White border
-          },
-          duration: 2000, // Display duration in milliseconds (3 seconds)
-          iconTheme: {
-            primary: '#ffffff', // White icon color
-            secondary: '#28a745', // Green icon color
-          },
-        });
-        setTimeout(() => {
-          navigator('/Feedback');
-        }, 2500); // Wait for 2 seconds after displaying success toast before navigating
-      }, 2500); // Wait for 2 seconds after dismissing loading toast before displaying success toast
-    }, 5000); // Wait for 5 seconds before dismissing loading toast
-  };
-
-  useEffect(() => {
-    axios.get('/studentprofile')
-      .then((res) => {
-        setSid(res.data.stdid);
-        setGrade(res.data.grade);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }, []);
-
-  /*const[questions,setQuestions] = useState([]);
-  useEffect(() => {
-    axios.get('http://localhost:5000/MyQuestions')
-    .then((res) =>{
-      setQuestions(res.data);
-    })
-    .catch((err) => console.error(err));
-  },[]);*/
 
   return (
-    <>
-    <Head/>
-    <h1 className="heading9">We Want to Hear from You - Service Feedback</h1>
-    <div className='uth2' >
-        
-      <Toaster/>
-    
-    <form onSubmit={handleSubmit}>
+    <div>
+      <Head />
+      <Toaster />
 
-    <label htmlFor="sid1" className="tv18">Student ID</label>
-    <input
-        id="sid1" style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '431px',top: '262px',background: '#FFFFFF',border: '1px solid #000000'}} 
-        type="text" value={sid} readOnly/>
+      <div className="max-w-3xl mx-auto px-4 mt-6 md:ml-[270px] pb-12">
+        <h2 className="text-xl font-bold text-[#063a67] mb-6">
+          Service Feedback
+        </h2>
 
-      <label htmlFor="grade" className="tt61">Grade</label>
-      <input
-        id="sid1" style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '431px',top: '406px',background: '#FFFFFF',border: '1px solid #000000'}} 
-        type="text" value={grade} readOnly/>
-      
+        <div className="bg-white border-2 border-gray-100 rounded-[20px] shadow-md p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
-      <label htmlFor="feedback" className="tt71">Feedback</label>
-      <textarea
-        id="feedback"
-        style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '178px',left: '431px',top: '561px',background: '#FFFFFF',border: '1px solid #000000'}}
-        onChange={(a)=> setSFeedback(a.target.value)}
-        required
-      ></textarea>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Student ID</label>
+                <input value={sid} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
 
-      <label htmlFor="date" className="tt81">Date</label>
-      <input
-        id="date"
-        style={{boxSizing: 'border-box',position: 'absolute',width: '920px',height: '53px',left: '436px',top: '815px',background: '#FFFFFF',border: '1px solid #000000'}}
-        type="date"
-        value={date}
-        readOnly
-        onChange={(a)=> this.setState({ currentDate: a.target.value })}
-      />
-      <button
-        id="sfeed"
-        className="buttonbb6"
-       
-      >
-        Submit
-      </button>
-    </form>
-  </div>  
-  </>
-  )
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Grade</label>
+                <input value={grade} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+
+              <div>
+                <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Date</label>
+                <input value={date} readOnly className="w-full p-3 border-2 border-gray-100 bg-gray-50 rounded-xl font-semibold text-gray-700 cursor-not-allowed" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">Your Feedback</label>
+              <textarea
+                required
+                rows={5}
+                placeholder="Write your feedback about our services..."
+                value={sfeedback}
+                onChange={e => setSFeedback(e.target.value)}
+                className="w-full p-3 border-2 border-gray-200 rounded-xl font-semibold text-gray-700 focus:outline-none focus:border-[#384D6C] resize-none"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button type="submit" disabled={loading}
+                className="bg-[#384D6C] hover:bg-[#283952] disabled:opacity-60 text-white font-bold px-8 py-3 rounded-xl transition-all">
+                {loading ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default SFeedback
+export default SFeedback;

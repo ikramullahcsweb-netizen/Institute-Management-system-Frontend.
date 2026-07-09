@@ -33,7 +33,7 @@ const AddClassForm = ({ onSubmit }) => {
       Manager_ID: managerId,
       Added_Date: todayDate,
     };
-    axios.post('http://localhost:3000/Manager/Timetable/AddnewClasstime', newClass)
+    axios.post('/api/timetable/Manager/Timetable/AddnewClasstime', newClass)
       .then(res => {
         console.log(res);
         navigator('/Manager/Timetable');
